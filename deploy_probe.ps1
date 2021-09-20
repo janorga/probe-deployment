@@ -81,7 +81,7 @@ foreach ($probe in $probeList)
         $site = $dc + $siteDigit
 
         # Get vCenter and connect
-        $destVcenter = $vcenter = $cluster.Split("-")[0] + "-" + $cluster.Split("-")[1] + "por-ngcs.lan"
+        $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + "por-ngcs.lan"
         Write-Host "We are about to connect to $vcenter to create $($probe.name)!"
         $vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
 
