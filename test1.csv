@@ -1,0 +1,2 @@
+name,ipadd,cluster,portgroup,privnet
+es-lgr-lpngp1zz01-01,10.5.101.10,pre2-vc01-cl02,vmvlan2226,privlan3799
