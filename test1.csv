@@ -1,2 +1,2 @@
-name,ipadd,cluster,portgroup,privnet
-es-lgr-lpngp1zz01-01,10.5.101.10,pre2-vc01-cl02,vmvlan2226,privnet3799
+name,ipadd4,ipadd6,cluster,portgroup,privnet,mac,dhcpfqdn
+es-lgr-lpngp1zz01-01,10.5.101.10,,pre2-vc01-cl02,vmvlan2226,privnet3799,,,

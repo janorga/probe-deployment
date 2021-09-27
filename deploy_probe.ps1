@@ -1,8 +1,82 @@
+<#
+.SYNOPSIS
+This scripts deploy CheckMK probe servers in batch mode with DHCP reservation and DNS register creation.
+.DESCRIPTION
+This script deploys CheckMK probes servers for the NGCS infrastrucure, you must provide a CSV file that include these headers.
+name,ipadd4,ipadd6,cluster,portgroup,privnet,mac,dhcpfqdn
+
+name: name of the vm ( ex: es-lgr-lpngp1zz01-01)
+ipadd4: IPv4 of the VM for the public interface
+ipadd6: IPv6 of the VM for the public interface
+cluster: Datastore cluster location
+portgroup: vlan of the pulic interface
+privnet: vlan for the private network interface
+mac: this parameter will be automatically inserted during the script just after the VM creation
+dhcpfqdn: specifiy the fqdn that will relies on the public IP so during the script, the DHCP reervation will be automatically created.
+
+.PARAMETER probeFile
+Mandatory
+You must specify the path to your CSV file, see description for more details about it.
+Default value: -
+.PARAMETER priv_key
+Mandatory
+Specify the path to your rsa private key file for the PSS User , if you use Windows 10/2K19 you must provide it with RSA format, if not then PPK file for the PLINK utility.
+.EXAMPLE
+.\deploy_probe.ps1 -probeFile pathdeprobefile -priv_key pathofyourrsakeypssuser
+Export and deploy source_template1 and source template2 from source vCenter to all live PC vCenters using "C:\IMAGENES" as temporal path for OVFTOOLS.
+.LINK 
+Online version: https://example.com
+.NOTES
+2021 Javier Lobato 
+2021/09/22 First Release
+#>
+
 Param(
     [Parameter(Mandatory = $True)] [string]$probeFile = "",
     [Boolean]$force = $false,
     [Boolean]$createdns = $true
+    [Parameter(Mandatory = $True)] [string]$priv_key = ""
 )
+
+if (!$probeFile){
+    Write-Host "Please, give the path to the CSV file with all parameters like the proble_example.csv file in the DATA directory!!!" -ForegroundColor Red
+	exit 10
+}
+
+if (!$priv_key){
+    Write-Host "Please, give the path to your private key file for PSSUSER in PPK format !!!" -ForegroundColor Red
+	    exit 10
+}
+
+$local_ssh = get-command ssh.exe | select-object -ExpandProperty Definition
+
+if (!$local_ssh){
+    Write-Host "ssh.exe path not found!! Please add ssh client to your Path!" -ForegroundColor Red
+	exit 10
+}
+
+
+if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue)) {
+    Add-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue
+    if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue)) {
+        # If PowerCLI 5.8 snapins are not loaded, try importing the new PowerCLI 6.5 modules
+        Get-Module -ListAvailable VM* | Import-Module
+        if ((Get-Module -Name "VM*") -eq $null)
+        {
+            # If neither PowerCLI 5.8 nor PowerCLI 6.5 are installed, exit with error
+            Write-Host "WARNING: You must have POWERCLI installed on your system" -BackgroundColor Red
+            Write-Host "Download here: https://www.vmware.com/support/developer/PowerCLI/"
+            Start-Sleep "https://www.vmware.com/support/developer/PowerCLI/"
+            exit 
+        }
+    }
+}
+
+#check for previous vcenter connections
+if (($DefaultVIServers).Count -ne 0){
+	write-host "There are a previous vCenter active connection!!! Exit!!! " -ForegroundColor Red
+	exit (1)
+}
 
 # Load PowerCLI module
 Get-Module -ListAvailable VM* | Import-Module
@@ -110,7 +184,7 @@ foreach ($probe in $probeList)
             # Creamos el registro DNS, las windows no hace falta pues se auto-registran
             Write-Host "Vamos a conectar al Servidor de DNS para crear el registro"
             $dnscred = New-Object System.Management.Automation.PSCredential ($DomainProvisioningUser, (ConvertTo-SecureString $DomainProvisioningPass -AsPlainText -Force))
-            Invoke-Command -ComputerName por-dc1.por-ngcs.lan -Credential $dnscred -ScriptBlock { Param($vmname, $vmip) Add-DNSServerResourceRecordA -ZoneName "por-ngcs.lan" -Name $vmname -IPv4Address $vmip -CreatePtr } -ArgumentList $probe.name, $probe.ipadd >> $null
+            Invoke-Command -ComputerName por-dc1.por-ngcs.lan -Credential $dnscred -ScriptBlock { Param($probe.name, $probe.ipadd4) Add-DNSServerResourceRecordA -ZoneName "por-ngcs.lan" -Name $vmname -IPv4Address $vmip -CreatePtr } -ArgumentList $probe.name, $probe.ipadd4 >> $null
         }
         $vm = New-VM -Server $vcenter -Name $probe.name -Template (Get-template -Name $template) -ResourcePool (Get-Cluster -Name $probe.cluster) -OSCustomizationSpec $oscust -Datastore $datastore -Location (Get-Folder -Name $location -Type "VM")
         Get-NetworkAdapter -VM (Get-VM -Name $probe.name) | Set-NetworkAdapter -NetworkName $probe.portgroup -Confirm:$false -StartConnected:$true
@@ -120,8 +194,55 @@ foreach ($probe in $probeList)
             New-NetworkAdapter -VM $vm -Portgroup (Get-VDPortgroup -Name $probe.privnet) -StartConnected:$true -Type:Vmxnet3 -Confirm:$false
         }
         # Start-VM -Server $vcenter -VM $probe.name
-        
+        # Export MAC address to the CSV file
         # Add the information of VM and MAC address to a variable
+        
+        $probe.mac = (get-vm -Name $probe.name | Get-NetworkAdapter -Name "Network adapter 1").MacAddress
+           
+
+        
         Disconnect-VIServer -Server $destVcenter -Confirm:$false
     }
 }
+
+# Export the array to our CSV
+$probeList | Export-csv $probeFile -NoTypeInformation
+
+
+# DHCP reservation
+
+function ssh_exec {
+
+    foreach ($probe in $probeList) 
+    {
+        ssh -i $priv_key pssuser@$probe.dhcpfqdn "/home/pssuser/insert_dhcp_entry.sh -ipv4 $probe.portgroup $probe.mac $ipadd4 && /home/pssuser/insert_dhcp_entry.sh -ipv6 $probe.portgroup $probe.mac $ipadd6 "    
+    }
+ 
+    param (
+        OptionalParameters
+    )   
+}
+
+function plink_exec {
+
+    foreach ($probe in $probelist)
+    {
+        plink -batch -i $priv_key pssuser@$probe.dhcpfqdn "/home/pssuser/insert_dhcp_entry.sh -ipv4 $probe.portgroup $probe.mac $ipadd4 && /home/pssuser/insert_dhcp_entry.sh -ipv6 $probe.portgroup $probe.mac $ipadd6 "
+    }
+  
+    param (
+        OptionalParameters
+    )
+    
+}
+
+if ($local_ssh -ne "")
+{
+    ssh_exec
+}
+else 
+{
+    plink_exec    
+}
+   
+} 
