@@ -39,20 +39,13 @@ Param(
 )
 
 if (!$probeFile){
-    Write-Host "Please, give the path to the CSV file with all parameters like the proble_example.csv file in the DATA directory!!!" -ForegroundColor Red
+    Write-Host "Please, give the path to the CSV file with all parameters as the proble_example.csv file in the DATA directory !" -ForegroundColor Red
 	exit 10
 }
 
 if (!$priv_key){
-    Write-Host "Please, give the path to your private key file for PSSUSER in PPK format !!!" -ForegroundColor Red
+    Write-Host "Please, give the path to your private key file for PSSUSER in PPK format or RSA if you are using Win10/2K19 !" -ForegroundColor Red
 	    exit 10
-}
-
-$local_ssh = get-command ssh.exe | select-object -ExpandProperty Definition
-
-if (!$local_ssh){
-    Write-Host "ssh.exe path not found!! Please add ssh client to your Path!" -ForegroundColor Red
-	exit 10
 }
 
 
@@ -211,6 +204,8 @@ $probeList | Export-csv $probeFile -NoTypeInformation
 
 # DHCP reservation
 
+$local_ssh = [bool] (Get-Command -ErrorAction Ignore -Type Application ssh)
+
 function ssh_exec {
 
     foreach ($probe in $probeList) 
@@ -236,7 +231,7 @@ function plink_exec {
     
 }
 
-if ($local_ssh -ne "")
+if ( $local_ssh )
 {
     ssh_exec
 }
