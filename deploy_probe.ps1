@@ -211,11 +211,7 @@ function ssh_exec {
     foreach ($probe in $probeList) 
     {
         ssh -i $priv_key pssuser@$probe.dhcpfqdn "/home/pssuser/insert_dhcp_entry.sh -ipv4 $probe.portgroup $probe.mac $ipadd4 && /home/pssuser/insert_dhcp_entry.sh -ipv6 $probe.portgroup $probe.mac $ipadd6 "    
-    }
- 
-    param (
-        OptionalParameters
-    )   
+    }  
 }
 
 function plink_exec {
@@ -223,12 +219,7 @@ function plink_exec {
     foreach ($probe in $probelist)
     {
         plink -batch -i $priv_key pssuser@$probe.dhcpfqdn "/home/pssuser/insert_dhcp_entry.sh -ipv4 $probe.portgroup $probe.mac $ipadd4 && /home/pssuser/insert_dhcp_entry.sh -ipv6 $probe.portgroup $probe.mac $ipadd6 "
-    }
-  
-    param (
-        OptionalParameters
-    )
-    
+    }      
 }
 
 if ( $local_ssh )
@@ -240,4 +231,4 @@ else
     plink_exec    
 }
    
-} 
+}
