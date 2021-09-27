@@ -11,7 +11,7 @@ ipadd6: IPv6 of the VM for the public interface
 cluster: Datastore cluster location
 portgroup: vlan of the pulic interface
 privnet: vlan for the private network interface
-mac: this parameter will be automatically inserted during the script just after the VM creation
+mac: this parameter will be automatically feeded during the script just after the VM creation
 dhcpfqdn: specifiy the fqdn that will relies on the public IP so during the script, the DHCP reervation will be automatically created.
 
 .PARAMETER probeFile
@@ -33,10 +33,10 @@ Online version: https://example.com
 
 Param(
     [Parameter(Mandatory = $True)] [string]$probeFile = "",
+    [Parameter(Mandatory = $True)] [string]$priv_key = ""
     [Boolean]$force = $false,
     [Boolean]$createdns = $true
-    [Parameter(Mandatory = $True)] [string]$priv_key = ""
-)
+    )
 
 if (!$probeFile){
     Write-Host "Please, give the path to the CSV file with all parameters as the proble_example.csv file in the DATA directory !" -ForegroundColor Red
