@@ -230,5 +230,3 @@ else
 {
     plink_exec    
 }
-   
-}
