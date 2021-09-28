@@ -33,7 +33,7 @@ Online version: https://example.com
 
 Param(
     [Parameter(Mandatory = $True)] [string]$probeFile = "",
-    [Parameter(Mandatory = $True)] [string]$priv_key = ""
+    [Parameter(Mandatory = $True)] [string]$priv_key = "",
     [Boolean]$force = $false,
     [Boolean]$createdns = $true
     )
