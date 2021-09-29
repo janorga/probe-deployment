@@ -23,9 +23,12 @@ Mandatory
 Specify the path to your rsa private key file for the PSS User , if you use Windows 10/2K19 you must provide it with RSA format, if not then PPK file for the PLINK utility.
 .EXAMPLE
 .\deploy_probe.ps1 -probeFile pathdeprobefile -priv_key pathofyourrsakeypssuser
-Export and deploy source_template1 and source template2 from source vCenter to all live PC vCenters using "C:\IMAGENES" as temporal path for OVFTOOLS.
+Execute the script with the path to your CSV file and the RSA priv key for PSS User with default DNS registry creation.
+.EXAMPLE
+.\deploy_probe.ps1 -probeFile pathdeprobefile -priv_key pathofyourrsakeypssuser -createdns false
+Execute the script with the path to your CSV file and the RSA priv key for PSS User and no DNS registry creation.
 .LINK 
-Online version: https://example.com
+Online version: https://confluence.united-internet.org/display/~jlobatoalonso/deploy+probe+script
 .NOTES
 2021 Javier Lobato 
 2021/09/22 First Release
