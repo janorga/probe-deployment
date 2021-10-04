@@ -194,16 +194,13 @@ foreach ($probe in $probeList)
         # Add the information of VM and MAC address to a variable
         
         $probe.mac = (get-vm -Name $probe.name | Get-NetworkAdapter -Name "Network adapter 1").MacAddress
-           
-
-        
+                
         Disconnect-VIServer -Server $destVcenter -Confirm:$false
     }
 }
 
 # Export the array to our CSV
 $probeList | Export-csv $probeFile -NoTypeInformation
-
 
 # DHCP reservation
 
