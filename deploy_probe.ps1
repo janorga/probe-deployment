@@ -211,7 +211,7 @@ function ssh_exec {
 
     foreach ($probe in $probeList) 
     {
-        ssh -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $($probe.portgroup) $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $($probe.portgroup) $($probe.mac) $($probe.ipadd6)"
+        ssh -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 ((($($probe.portgroup)) -split ("vm"))[1]) $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $($probe.portgroup) $($probe.mac) $($probe.ipadd6)"
     }  
 }
 
@@ -219,7 +219,7 @@ function plink_exec {
 
     foreach ($probe in $probelist)
     {
-        plink -batch -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $($probe.portgroup) $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $($probe.portgroup) $($probe.mac) $($probe.ipadd6)"
+        plink -batch -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 ((($($probe.portgroup)) -split ("vm"))[1]) $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $($probe.portgroup) $($probe.mac) $($probe.ipadd6)"
     }      
 }
 
