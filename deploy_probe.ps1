@@ -153,7 +153,7 @@ foreach ($probe in $probeList)
 
         # Get vCenter and connect
         $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
-        Write-Host "We are about to connect to $vcenter to create $($probe.name)!"
+        Write-Host "We are about to connect to $($vcenter) to create $($probe.name)!"
         $vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
 
         # Calculate datastore basing on probe name
@@ -207,11 +207,14 @@ $probeList | Export-csv -UseQuotes AsNeeded $probeFile
 
 $local_ssh = [bool] (Get-Command -ErrorAction Ignore -Type Application ssh)
 $vlanfordhcp = (($probe.portgroup) -split "vm")[1]
+
+Write-Host "Connecting to DHCP Server to do the reservation, accept the SSH fingertprint for the first time" -ForegroundColor Cyan
 function ssh_exec {
 
     foreach ($probe in $probeList) 
     {
         ssh -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
+        Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for NIC with MAC $($probe.mac) on $($robe.dhcpfqdn)" -ForegroundColor Green
     }  
 }
 
@@ -220,6 +223,8 @@ function plink_exec {
     foreach ($probe in $probelist)
     {
         plink -batch -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
+        Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for NIC with MAC $($probe.mac) on $($robe.dhcpfqdn)" -ForegroundColor Green
+
     }      
 }
 
@@ -231,3 +236,5 @@ else
 {
     plink_exec    
 }
+
+Write-Host "CMK Probes correctly deployed, now you must ensure to create the anti-spoofing rules with the MACs on your CSV File$($probeFile) " -ForegroundColor Green -BackgroundColor Black
