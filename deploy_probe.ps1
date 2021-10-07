@@ -118,6 +118,7 @@ foreach ($probe in $probeList)
         else { $siteNumber = $siteDigit }
         switch ($dcPrefix) {
             "es" {
+
                 if ($isPre -eq "p")
                 {
                     if ($siteDigit -eq "2")
@@ -200,7 +201,7 @@ foreach ($probe in $probeList)
 }
 
 # Export the array to our CSV
-$probeList | Export-csv $probeFile -NoTypeInformation
+$probeList | Export-csv -UseQuotes AsNeeded $probeFile
 
 # DHCP reservation
 
