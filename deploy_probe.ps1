@@ -25,7 +25,7 @@ Specify the path to your rsa private key file for the PSS User , if you use Wind
 .\deploy_probe.ps1 -probeFile pathdeprobefile -priv_key pathofyourrsakeypssuser
 Execute the script with the path to your CSV file and the RSA priv key for PSS User with default DNS registry creation.
 .EXAMPLE
-.\deploy_probe.ps1 -probeFile pathdeprobefile -priv_key pathofyourrsakeypssuser -createdns false
+.\deploy_probe.ps1 -probeFile pathdeprobefile -priv_key pathofyourrsakeypssuser -createdns 0 -force 1
 Execute the script with the path to your CSV file and the RSA priv key for PSS User and no DNS registry creation.
 .LINK 
 Online version: https://confluence.united-internet.org/display/~jlobatoalonso/deploy+probe+script
