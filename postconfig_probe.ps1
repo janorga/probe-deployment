@@ -87,7 +87,7 @@ foreach ($probe in $probeList)
     $isPre = $Matches[2]
     $siteDigit = $Matches[3]
     $probeType = $Matches[5]
-    
+
         if ($siteDigit -eq "d") { $siteNumber = "9" }
         else { $siteNumber = $siteDigit }
         switch ($dcPrefix) {
@@ -141,9 +141,10 @@ foreach ($probe in $probeList)
 foreach ($probe in $probeList)
 {
     # Variblables for Foreman depending from NGCS site
-
+<#
     switch ( $site )
     {
+        "pre2" { $idhostgroup = 134 }
         "glo1" { $idhostgroup = 139 }
         "glo2" { $idhostgroup = 140 }
         "lxa1" { $idhostgroup = 138 }
@@ -156,13 +157,9 @@ foreach ($probe in $probeList)
         "rhr3" { $idhostgroup = 145 }
         "rhr4" { $idhostgroup = 146 }
     }
-# Variables for Foreman API
-    Body = @{
-        puppetclass_id = $idhostgroup
-    }
-    
-    $jsonpayload = ($Body | ConvertTo-Json)
-    
+#>
+    # Variables for Foreman REST API
+        
     $username_ngcs = Read-Host "Enter your NGCS username: "
     $password_ngcs = Read-Host "Enter your NGCS password: " -AsSecureString
     $password_ngcs = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password_ngcs))
@@ -171,17 +168,54 @@ foreach ($probe in $probeList)
     $encodedlogin=[Convert]::ToBase64String($bytes)
     $authheader = "Basic " + $encodedlogin
     
-    $params = @{
-        Uri         = "https://por-puppet2.por-ngcs.lan/api/hosts/$($probe.name).por-ngcs.lan/puppetclass_ids"
+     # Searching for HostGroupID over Foreman REST API
+
+    $params_search_hostgroup = @{
+    Uri         = "https://por-puppet2.por-ngcs.lan/api/hostgroups`?search=name=`"ngcs_probe`""
+    Headers     = @{ 'Authorization' = $($authheader) }
+    Method      = 'GET'
+    ContentType = 'application/json'
+                                }
+
+    $response_api_hostgroups = Invoke-RestMethod @params_search_hostgroup 
+
+    $idhostgroup = ($response_api_hostgroups | select-object -property id,title | where-object {$_.title -like "*$($site)*"} ).id
+
+    # Searching for HostID over Foreman REST API
+
+    $params_idhost = @{
+        Uri         = "https://por-puppet2.por-ngcs.lan/api/hosts`?search=name=`"$($probe.name).por-ngcs.lan`""
         Headers     = @{ 'Authorization' = $($authheader) }
-        Method      = 'POST'
-        Body        = $jsonpayload 
+        Method      = 'GET'
+        ContentType = 'application/json'
+    }
+
+    $response_api_idhost = Invoke-RestMethod @params_idhost
+
+    $idhost = $response_api_idhost.results.id
+
+
+     # Update HostGroup ID for host over Foreman REST API
+    $Body_HostGroup = 
+'{
+  "host": {
+        "hostgroup_id": $idhostgroup
+         }
+}'
+    
+    #$jsonpayload_hostgroup = ($Body_HostGroup | ConvertTo-Json)
+
+    $params_hostgroup = @{
+        Uri         = "https://por-puppet2.por-ngcs.lan/api/hosts/$($idhost)"
+        Headers     = @{ 'Authorization' = $($authheader) }
+        Method      = 'PUT'
+        Body        = $Body_HostGroup 
         ContentType = 'application/json'
     }
     
-    $response_api = Invoke-RestMethod @params
-
-    if ($response_api -eq "ok")
+    $response_api_hostgroup = Invoke-RestMethod @params_hostgroup
+#>
+    if ($response_api_hostgroup.hostgroup_id -eq $idhostgroup)
     {
         Write-Host "Add $($probe.name) to Foreman Hostgroup $($idhostgroup) for Site $($site)"    
     }
