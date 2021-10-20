@@ -196,20 +196,21 @@ foreach ($probe in $probeList)
 
 
      # Update HostGroup ID for host over Foreman REST API
-    $Body_HostGroup = 
-'{
-  "host": {
-        "hostgroup_id": $idhostgroup
-         }
-}'
+    $Body_HostGroup = @{
+        host = @(
+          @{ 
+            hostgroup_id =  $idhostgroup
+          }
+        )
+      }
     
-    #$jsonpayload_hostgroup = ($Body_HostGroup | ConvertTo-Json)
+    $jsonpayload_hostgroup = ($Body_HostGroup | ConvertTo-Json -Depth 10)
 
     $params_hostgroup = @{
         Uri         = "https://por-puppet2.por-ngcs.lan/api/hosts/$($idhost)"
         Headers     = @{ 'Authorization' = $($authheader) }
         Method      = 'PUT'
-        Body        = $Body_HostGroup 
+        Body        = $jsonpayload_hostgroup 
         ContentType = 'application/json'
     }
     
