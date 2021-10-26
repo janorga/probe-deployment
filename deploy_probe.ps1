@@ -42,12 +42,12 @@ Param(
     )
 
 if (!$probeFile){
-    Write-Host "Please, give the path to the CSV file with all parameters as the proble_example.csv file in the DATA directory !" -ForegroundColor Red
+    Write-Host "Please, give the path to the CSV file with all parameters as the proble_example.csv file in the DATA directory !" -ForegroundColor Red -BackgroundColor Black
 	exit 10
 }
 
 if (!$priv_key){
-    Write-Host "Please, give the path to your private key file for PSSUSER in PPK format or RSA if you are using Win10/2K19 !" -ForegroundColor Red
+    Write-Host "Please, give the path to your private key file for PSSUSER in PPK format or RSA if you are using Win10/2K19 !" -ForegroundColor Red -BackgroundColor Black
 	    exit 10
 }
 
@@ -70,16 +70,19 @@ if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue))
 
 #check for previous vcenter connections
 if (($DefaultVIServers).Count -ne 0){
-	write-host "There are a previous vCenter active connection!!! Exit!!! " -ForegroundColor Red
+	write-host "There are a previous vCenter active connection!!! Exit!!! " -ForegroundColor Red -BackgroundColor Black
 	exit (1)
 }
+
+Write-Host "`nPreparing to connect, please introduce your NGCS credentials when prompted`n" -BackgroundColor Blue -ForegroundColor Cyan
+    
 
 # Load PowerCLI module
 Get-Module -ListAvailable VM* | Import-Module
 
 # Get info from CSV
 try {
-    $probeList = Import-Csv -Path $probeFile
+    $probeList = Import-Csv -Delimiter ',' -Path $probeFile
 } catch {
     Write-Error -ForegroundColor:Red "Probe file not found. Exiting!"
     exit
@@ -105,7 +108,7 @@ foreach ($probe in $probeList)
         } else {
             # Will be replaced by Resolve-DnsName if powershell is upgraded in desktops
             $dnscheck = [System.Net.DNS]::GetHostAddresses("$($probe.name).por-ngcs.lan")
-            Write-Host "DNS entry already exists. Please check and re-run script with -force:`$true option" -ForegroundColor:Red
+            Write-Host "DNS entry already exists. Please check and re-run script with -force:`$true option" -ForegroundColor:Red -BackgroundColor Black
         }
     } catch {
         # Calculate variables
@@ -153,7 +156,7 @@ foreach ($probe in $probeList)
 
         # Get vCenter and connect
         $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
-        Write-Host "We are about to connect to $($vcenter) to create $($probe.name)!"
+        Write-Host "We are about to connect to $destVcenter to create $($probe.name)!`n" -ForegroundColor Cyan -BackgroundColor Blue
         $vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
 
         # Calculate datastore basing on probe name
@@ -175,6 +178,7 @@ foreach ($probe in $probeList)
 
         # Prepare customization and deploy VM
         Get-OSCustomizationSpec -Name $probe.name -ErrorAction SilentlyContinue | Remove-OSCustomizationSpec -Confirm:$false
+        #Write-Host  "`$oscust = New-OSCustomizationSpec -Name $($probe.name) -Type NonPersistent -OSCustomizationSpec $customization"
         $oscust = New-OSCustomizationSpec -Name $probe.name -Type NonPersistent -OSCustomizationSpec $customization
         $oscust | Get-OSCustomizationNicMapping | Set-OSCustomizationNicMapping -IpMode UseDhcp
         if ($createdns) {
@@ -196,26 +200,29 @@ foreach ($probe in $probeList)
         
         $probe.mac = (get-vm -Name $probe.name | Get-NetworkAdapter -Name "Network adapter 1").MacAddress
                 
-        Disconnect-VIServer -Server $destVcenter -Confirm:$false
+        #Disconnect-VIServer -Server $destVcenter -Confirm:$false
     }
 }
 
+Disconnect-VIServer -Server $destVcenter -Confirm:$false
+
 # Export the array to our CSV
-$probeList | Export-csv -UseQuotes AsNeeded $probeFile
+#$probeList | Export-csv -UseQuotes AsNeeded $probeFile
+$probeList | Export-csv -Delimiter ',' -NoTypeInformation $probeFile
 
 # DHCP reservation
 
 $local_ssh = [bool] (Get-Command -ErrorAction Ignore -Type Application ssh)
 $vlanfordhcp = (($probe.portgroup) -split "vm")[1]
 
-Write-Host "Connecting to DHCP Server to do the reservation, accept the SSH fingertprint for the first time" -ForegroundColor Cyan
+Write-Host "Connecting to DHCP Server to do the reservation, accept the SSH fingertprint for the first time `n`n" -ForegroundColor Cyan -BackgroundColor Blue
 function ssh_exec {
 
     foreach ($probe in $probeList) 
-    {
-        ssh -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
-        Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for NIC with MAC $($probe.mac) on $($robe.dhcpfqdn)" -ForegroundColor Green
-    }  
+        {
+            ssh -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
+            Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for VM $($probe.name) with MAC $($probe.mac) on $($robe.dhcpfqdn) `n" -ForegroundColor Green -BackgroundColor Blue
+        }  
 }
 
 function plink_exec {
@@ -223,7 +230,7 @@ function plink_exec {
     foreach ($probe in $probelist)
     {
         plink -batch -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
-        Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for NIC with MAC $($probe.mac) on $($robe.dhcpfqdn)" -ForegroundColor Green
+        Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for VM $($probe.name) with MAC $($probe.mac) on $($robe.dhcpfqdn) `n" -ForegroundColor Green -BackgroundColor Blue
 
     }      
 }

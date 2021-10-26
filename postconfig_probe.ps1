@@ -77,7 +77,7 @@ try {
 }
 
 #Ask for credentials and connect to vCenter
-$myCredentials = Get-Credential -Message "Type user credentials for the vCenter connection"
+$myCredentials = Get-Credential -Message "Type NGCS user credentials for the vCenter connection"
 
 foreach ($probe in $probeList)
 {
@@ -128,64 +128,92 @@ foreach ($probe in $probeList)
     # Get vCenter and power on VM
 
     $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
-    Write-Host "Connecting to $($vcenter) to power on $($probe.name)!"
+    Write-Host "Connecting to $destVcenter to power on $($probe.name) " -ForegroundColor Cyan -BackgroundColor Blue
     $vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
-    Start-VM -Server $vcenter -VM $probe.name
+    Start-VM -Server $destVcenter -VM $($probe.name)
                
-    Disconnect-VIServer -Server $destVcenter -Confirm:$false
+    #Disconnect-VIServer -Server $destVcenter -Confirm:$false
     
 }
+
+Disconnect-VIServer -Server $destVcenter -Confirm:$false
+
+# SSH credential for default secret
+
+$securepassword = Read-host -Prompt "Please, introduce the default password for root user in NGCS to connect over SSH" -AsSecureString
+$sshpass = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($securepassword))
+
+# Variables for Foreman REST API
+        
+$username_ngcs = Read-Host "Enter your NGCS username: "
+$password_ngcs = Read-Host "Enter your NGCS password: " -AsSecureString
+$password_ngcs = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password_ngcs))
+$ngcs_creds = $username_ngcs + ":" + $password_ngcs
+$bytes = [System.Text.Encoding]::UTF8.GetBytes($ngcs_creds)
+$encodedlogin=[Convert]::ToBase64String($bytes)
+$authheader = "Basic " + $encodedlogin
+
+# function to refresh puppet agent
+<# function plink_exec {
+    {
+        plink -batch -pw $sshpass -l root $probefqdn "puppet agent -t"
+        Write-Host "Force Puppet agent to refresh in $($probe.name)" -ForegroundColor Green
+
+    }      
+}
+#>
 
 # Add each host to his Foreman HostGroup depending from his site
 
 foreach ($probe in $probeList)
 {
-    # Variblables for Foreman depending from NGCS site
-<#
-    switch ( $site )
-    {
-        "pre2" { $idhostgroup = 134 }
-        "glo1" { $idhostgroup = 139 }
-        "glo2" { $idhostgroup = 140 }
-        "lxa1" { $idhostgroup = 138 }
-        "lxa2" { $idhostgroup = 137 }
-        "lxa3" { $idhostgroup = 136 }
-        "por1" { $idhostgroup = 141 }
-        "por2" { $idhostgroup = 142 }
-        "rhr1" { $idhostgroup = 143 }
-        "rhr2" { $idhostgroup = 144 }
-        "rhr3" { $idhostgroup = 145 }
-        "rhr4" { $idhostgroup = 146 }
-    }
-#>
-    # Variables for Foreman REST API
-        
-    $username_ngcs = Read-Host "Enter your NGCS username: "
-    $password_ngcs = Read-Host "Enter your NGCS password: " -AsSecureString
-    $password_ngcs = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password_ngcs))
-    $ngcs_creds = $username_ngcs + ":" + $password_ngcs
-    $bytes = [System.Text.Encoding]::UTF8.GetBytes($ngcs_creds)
-    $encodedlogin=[Convert]::ToBase64String($bytes)
-    $authheader = "Basic " + $encodedlogin
     
+    $probefqdn = $($probe.name) + ".por-ngcs.lan"
+
+    $server = $probefqdn
+    $port = 22
+
+    do {
+        Write-Host "Waiting for server to respond over SSH ..."
+        Start-Sleep 3      
+      } until(Test-NetConnection -ComputerName $server -Port $port | ? { $_.TcpTestSucceeded } )
+
+  
+    if ({ $_.TcpTestSucceeded } -eq "True") {
+
+        Write-Host "Server $(server) is responding"
+        
+    }
+        
+    # Force puppet agent for the first time to register against Foreman
+
+    Write-Output y | plink -pw $sshpass -ssh -l root $probefqdn "exit"
+    plink -batch -pw $sshpass -l root $probefqdn "puppet agent -t"
+        Write-Host "Force Puppet agent to refresh in $($probe.name)" -ForegroundColor Green
+
+
+        
      # Searching for HostGroupID over Foreman REST API
 
     $params_search_hostgroup = @{
     Uri         = "https://por-puppet2.por-ngcs.lan/api/hostgroups`?search=name=`"ngcs_probe`""
-    Headers     = @{ 'Authorization' = $($authheader) }
+    Headers     = @{ 'Authorization' = $authheader }
     Method      = 'GET'
     ContentType = 'application/json'
                                 }
 
     $response_api_hostgroups = Invoke-RestMethod @params_search_hostgroup 
 
-    $idhostgroup = ($response_api_hostgroups | select-object -property id,title | where-object {$_.title -like "*$($site)*"} ).id
+    #$idhostgroup = ($response_api_hostgroups.results | select-object -property id,title | where-object {$_.title -like "*$($site)*"} ).id
+    $idhostgroup = ($response_api_hostgroups.results | Select-Object -Property id,title | Where-Object -FilterScript {$_.title -like "*$site*"} ).id
+
+    Write-Host " The hostgroup is $idhostgroup "
 
     # Searching for HostID over Foreman REST API
 
     $params_idhost = @{
         Uri         = "https://por-puppet2.por-ngcs.lan/api/hosts`?search=name=`"$($probe.name).por-ngcs.lan`""
-        Headers     = @{ 'Authorization' = $($authheader) }
+        Headers     = @{ 'Authorization' = $authheader }
         Method      = 'GET'
         ContentType = 'application/json'
     }
@@ -194,54 +222,44 @@ foreach ($probe in $probeList)
 
     $idhost = $response_api_idhost.results.id
 
+    Write-Host " And HostID is $idhost "
+
 
      # Update HostGroup ID for host over Foreman REST API
-    $Body_HostGroup = @{
+    <#$Body_HostGroup = @{
         host = @(
           @{ 
             hostgroup_id =  $idhostgroup
           }
         )
       }
-    
-    $jsonpayload_hostgroup = ($Body_HostGroup | ConvertTo-Json -Depth 10)
+    #>
+    #$jsonpayload_hostgroup = ($Body_HostGroup | ConvertTo-Json -Depth 10)
+    $jsonpayload_hostgroup = "{ `"host`": { `"hostgroup_id`": $idhostgroup } }"
+
 
     $params_hostgroup = @{
         Uri         = "https://por-puppet2.por-ngcs.lan/api/hosts/$($idhost)"
-        Headers     = @{ 'Authorization' = $($authheader) }
+        Headers     = @{ 'Authorization' = $authheader }
         Method      = 'PUT'
         Body        = $jsonpayload_hostgroup 
         ContentType = 'application/json'
     }
     
     $response_api_hostgroup = Invoke-RestMethod @params_hostgroup
-#>
+
     if ($response_api_hostgroup.hostgroup_id -eq $idhostgroup)
     {
         Write-Host "Add $($probe.name) to Foreman Hostgroup $($idhostgroup) for Site $($site)"    
+    }else{
+        Write-Error "Error contacting with Foreman API"
     }
-    else {
-        Write-Host "Error contacting with Foreman API"
-    }
+
+    plink -batch -pw $sshpass root@$probefqdn "puppet agent -t"
+        Write-Host "Force Puppet agent to refresh in $($probe.name)" -ForegroundColor Green
     
 }
 
 
-# SSH credential for default secret
-
-$securepassword = Read-host -Prompt "Please, introduce the default password for root user in NGCS" -AsSecureString
-$sshpass = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($securepassword))
-
-function plink_exec {
-
-    foreach ($probe in $probelist)
-    {
-        plink -batch -pw $sshpass $root@$($probe.name) "puppet agent -t"
-        Write-Host "Correctly refresh Puppet agent in $($probe.name)" -ForegroundColor Green
-
-    }      
-}
-
-plink_exec
 
 Write-Host "Successfully postconfigured all VM's from $($probeFile)"

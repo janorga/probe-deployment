@@ -1,2 +1,3 @@
-name,ipadd4,ipadd6,cluster,portgroup,privnet,mac,dhcpfqdn
-es-lgr-lpngp1zz01-01,10.5.101.10,,pre2-vc01-cl02,vmvlan2226,privnet3799,,pre1-dhcp1.por-ngcs.lan,
+"name","ipadd4","ipadd6","cluster","portgroup","privnet","mac","dhcpfqdn"
+"es-lgr-lpngp1zz01-01","10.5.82.16","2001:ba0:203f:8000::5","pre2-vc01-cl01","vmvlan2226","privnet3799","00:50:56:87:7d:52","pre1-dhcp1.por-ngcs.lan"
+"es-lgr-lpngp1zz01-02","10.5.83.16","2001:ba0:203f:8000::6","pre2-vc01-cl01","vmvlan2226","privnet3799","00:50:56:87:5b:de","pre1-dhcp1.por-ngcs.lan"
