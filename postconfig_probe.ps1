@@ -250,7 +250,7 @@ foreach ($probe in $probeList)
 
     if ($response_api_hostgroup.hostgroup_id -eq $idhostgroup)
     {
-        Write-Host "Add $($probe.name) to Foreman Hostgroup $($idhostgroup) for Site $($site)"    
+        Write-Host "Added $($probe.name) to Foreman Hostgroup $($idhostgroup) for Site $($site)"    
     }else{
         Write-Error "Error contacting with Foreman API"
     }
