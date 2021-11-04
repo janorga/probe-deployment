@@ -167,7 +167,7 @@ foreach ($probe in $probeList)
             {
                 $datastore = "ds_${site}_site_internal3_01"
             }
-            elseif ($dc -like "pre*")
+            elseif ($dc -like "pr*")
             {
                 $datastore = "ds_pre1_site_internal1_01"    
             }
@@ -178,7 +178,7 @@ foreach ($probe in $probeList)
         }
         elseif ($probe.name -like "*-02")
         {
-            if ($dc -like "pre*")
+            if ($dc -like "pr*")
             {
                 $datastore = "ds_pre1_site_internal2_01"
             }
