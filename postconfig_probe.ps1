@@ -167,7 +167,16 @@ $authheader = "Basic " + $encodedlogin
 
 foreach ($probe in $probeList)
 {
-    
+    # Define the environment id depending if it's AC1 or PUB
+
+    if ($isPre)
+    {
+        $env_id = 3
+    }
+    else {
+        $env_id = 7
+    }
+
     $probefqdn = $($probe.name) + ".por-ngcs.lan"
 
     $server = $probefqdn
@@ -253,6 +262,18 @@ foreach ($probe in $probeList)
         Write-Host "Added $($probe.name) to Foreman Hostgroup $($idhostgroup) for Site $($site)"    
     }else{
         Write-Error "Error contacting with Foreman API"
+    }
+
+    # Setting environment on host over Foreman
+    $jsonpayload_env_id = "{ `"host`": { `"environment_id`": $env_id } }"
+
+
+    $params_env_id = @{
+        Uri         = "https://por-puppet2.por-ngcs.lan/api/hosts/$($idhost)"
+        Headers     = @{ 'Authorization' = $authheader }
+        Method      = 'PUT'
+        Body        = $jsonpayload_env_id 
+        ContentType = 'application/json'
     }
 
     plink -batch -pw $sshpass root@$probefqdn "puppet agent -t"
