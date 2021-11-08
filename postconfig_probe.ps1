@@ -129,14 +129,16 @@ foreach ($probe in $probeList)
 
     $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
     Write-Host "Connecting to $destVcenter to power on $($probe.name) " -ForegroundColor Cyan -BackgroundColor Blue
-    $vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
+    #$vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
+    Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
     Start-VM -Server $destVcenter -VM $($probe.name)
                
-    #Disconnect-VIServer -Server $destVcenter -Confirm:$false
+    Disconnect-VIServer -Server $destVcenter -Confirm:$false
     
 }
 
-Disconnect-VIServer -Server $destVcenter -Confirm:$false
+
+#Disconnect-VIServer -Server $destVcenter -Confirm:$false
 
 # SSH credential for default secret
 
@@ -153,17 +155,7 @@ $bytes = [System.Text.Encoding]::UTF8.GetBytes($ngcs_creds)
 $encodedlogin=[Convert]::ToBase64String($bytes)
 $authheader = "Basic " + $encodedlogin
 
-# function to refresh puppet agent
-<# function plink_exec {
-    {
-        plink -batch -pw $sshpass -l root $probefqdn "puppet agent -t"
-        Write-Host "Force Puppet agent to refresh in $($probe.name)" -ForegroundColor Green
-
-    }      
-}
-#>
-
-# Add each host to his Foreman HostGroup depending from his site
+# Add each host to his Foreman HostGroup and Environment depending from his site
 
 foreach ($probe in $probeList)
 {
@@ -246,7 +238,6 @@ foreach ($probe in $probeList)
     #$jsonpayload_hostgroup = ($Body_HostGroup | ConvertTo-Json -Depth 10)
     $jsonpayload_hostgroup = "{ `"host`": { `"hostgroup_id`": $idhostgroup } }"
 
-
     $params_hostgroup = @{
         Uri         = "https://por-puppet2.por-ngcs.lan/api/hosts/$($idhost)"
         Headers     = @{ 'Authorization' = $authheader }
@@ -264,10 +255,9 @@ foreach ($probe in $probeList)
         Write-Error "Error contacting with Foreman API"
     }
 
-    # Setting environment on host over Foreman
+    # Setting environment on host over Foreman and verify result
     $jsonpayload_env_id = "{ `"host`": { `"environment_id`": $env_id } }"
-
-
+    
     $params_env_id = @{
         Uri         = "https://por-puppet2.por-ngcs.lan/api/hosts/$($idhost)"
         Headers     = @{ 'Authorization' = $authheader }
@@ -276,11 +266,26 @@ foreach ($probe in $probeList)
         ContentType = 'application/json'
     }
 
-    plink -batch -pw $sshpass root@$probefqdn "puppet agent -t"
-        Write-Host "Force Puppet agent to refresh in $($probe.name)" -ForegroundColor Green
-    
-}
+    $response_api_env_id = Invoke-RestMethod @params_env_id
 
+    if ($response_api_env_id.environment_id -eq $env_id)
+    {
+        Write-Host "Added $($probe.name) to Foreman environment $($env_id) for Site $($site)"    
+    }else{
+        Write-Error "Error contacting with Foreman API"
+    }
+    
+    # Verify if env is PRE(AC1) to execute puppet directly, if it's PUB (else) then select the puppet public server 
+    if ($isPre)
+    {
+        plink -batch -pw $sshpass root@$probefqdn "puppet agent -t"
+        Write-Host "Force Puppet agent to refresh in $($probe.name)" -ForegroundColor Green
+    }
+    else {
+        plink -batch -pw $sshpass root@$probefqdn "puppet agent -t --server ngcs-puppet2.com.schlund.de --waitforcert 5"
+        Write-Host "Force Puppet agent to refresh in $($probe.name)" -ForegroundColor Green
+    }
+}
 
 
 Write-Host "Successfully postconfigured all VM's from $($probeFile)"
