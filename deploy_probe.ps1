@@ -158,7 +158,8 @@ foreach ($probe in $probeList)
         # Get vCenter and connect
         $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
         Write-Host "We are about to connect to $destVcenter to create $($probe.name)!`n" -ForegroundColor Cyan -BackgroundColor Blue
-        $vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
+        #$vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
+        Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
 
         # Calculate datastore basing on probe name
         if ($probe.name -like "*-01")
@@ -200,7 +201,8 @@ foreach ($probe in $probeList)
             Invoke-Command -ComputerName por-dc1.por-ngcs.lan -Credential $dnscred -ScriptBlock { Param($vmname, $vmip) Add-DNSServerResourceRecordA -ZoneName "por-ngcs.lan" -Name $vmname -IPv4Address $vmip -CreatePtr } -ArgumentList $($probe.name), $($probe.ipadd4) >> $null
     
         }
-        $vm = New-VM -Server $vcenter -Name $probe.name -Template (Get-template -Name $template) -ResourcePool (Get-Cluster -Name $probe.cluster) -OSCustomizationSpec $oscust -Datastore $datastore -Location (Get-Folder -Name $location -Type "VM")
+        #$vm = New-VM -Server $vcenter -Name $probe.name -Template (Get-template -Name $template) -ResourcePool (Get-Cluster -Name $probe.cluster) -OSCustomizationSpec $oscust -Datastore $datastore -Location (Get-Folder -Name $location -Type "VM")
+        $vm = New-VM -Server $destVcenter -Name $probe.name -Template (Get-template -Name $template) -ResourcePool (Get-Cluster -Name $probe.cluster) -OSCustomizationSpec $oscust -Datastore $datastore -Location (Get-Folder -Name $location -Type "VM")
         Get-NetworkAdapter -VM (Get-VM -Name $probe.name) | Set-NetworkAdapter -NetworkName $probe.portgroup -Confirm:$false -StartConnected:$true
         Get-VM -Name $probe.name | Set-VM -NumCpu $numcpu -MemoryGB $ram -Confirm:$false
         if ($probe.privnet -ne "")
@@ -213,11 +215,11 @@ foreach ($probe in $probeList)
         
         $probe.mac = (get-vm -Name $probe.name | Get-NetworkAdapter -Name "Network adapter 1").MacAddress
                 
-        #Disconnect-VIServer -Server $destVcenter -Confirm:$false
+        Disconnect-VIServer -Server $destVcenter -Confirm:$false
     }
 }
 
-Disconnect-VIServer -Server $destVcenter -Confirm:$false
+#Disconnect-VIServer -Server $destVcenter -Confirm:$false
 
 # Export the array to our CSV
 #$probeList | Export-csv -UseQuotes AsNeeded $probeFile
