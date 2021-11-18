@@ -112,48 +112,61 @@ foreach ($probe in $probeList)
         }
     } catch {
         # Calculate variables
-        $probe.name -match "^([a-z]{2})-[a-z]{3}-[a-z]{2}ng(p?)([d0-9])zz([0-9]{2,3})-([0-2]{2})$" | Out-Null
+        $probe.name -match "^([a-z]{2})-([a-z]{3})-[a-z]{2}ng(p?)([d0-9])zz([0-9]{2,3})-([0-2]{2})" | Out-Null
         $dcPrefix = $Matches[1]
-        $isPre = $Matches[2]
-        $siteDigit = $Matches[3]
+        $city = $Matches[2]
+        $isPre = $Matches[3]
+        $siteDigit = $Matches[4]
         $probeType = $Matches[5]
+        
         if ($siteDigit -eq "d") { $siteNumber = "9" }
         else { $siteNumber = $siteDigit }
         switch ($dcPrefix) {
-            "es" {
+        "es" {
 
-
-                if ($isPre -eq "p")
-                {
-                    if ($siteDigit -eq "2")
-                    {
-                        $dc = "pru"
-                    }
-                    else
-                    {
-                        $dc = "pre"
-                    }
-                }
-                else
-                {
-                    $dc = "por"                    
-                }
+        if ($isPre -eq "p")
+        {
+            if ($siteDigit -eq "2")
+            {
+                $dc = "pru"
             }
-            "us" {
-                $dc = "lxa"
+            else
+            {
+                $dc = "pre"
             }
-            "de" {
-                $dc = "rhr"
-            }
-            "gb" {
-                $dc = "glo"
-            }
+        }
+        else
+        {
+            $dc = "por"                    
+        }
+    }
+    "us" {
+        $dc = "lxa"
+    }
+    "de" {
+        if ($city -eq "rhr")
+        {
+            $dc = "rhr"
+        }
+        else {
+            $dc = "ber"
+        }
+    }
+    "gb" {
+        $dc = "glo"
+    }
             default {
                 Write-Error "Invalid datacenter! Please check provided parameter and re-run with a valid one!"
                 exit
             }
         }
         $site = $dc + $siteDigit
+
+        # Exception for PRE
+        if ( ($isPre -eq "p") -and ($siteDigit -gt 2) )
+            {
+                $site = "pre2"
+            }
 
         # Get vCenter and connect
         $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
