@@ -77,7 +77,7 @@ try {
 }
 
 #Ask for credentials and connect to vCenter
-$myCredentials = Get-Credential -Message "Type NGCS user credentials for the vCenter connection"
+$myCredentials = Get-Credential -WarningAction:SilentlyContinue -Message "Please provide credentials from @ionos.com to connect to vcenter" -username "@ionos.com"
 
 foreach ($probe in $probeList)
 {
@@ -159,10 +159,13 @@ $sshpass = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropSe
 
 # Variables for Foreman REST API
         
-$username_ngcs = Read-Host "Enter your NGCS username: "
-$password_ngcs = Read-Host "Enter your NGCS password: " -AsSecureString
+
 $password_ngcs = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password_ngcs))
-$ngcs_creds = $username_ngcs + ":" + $password_ngcs
+$porngcscreds = Get-Credential -WarningAction:SilentlyContinue -Message "Please provide credentials from @por-ngcs.lan to connect to remote desktop" -username "@por-ngcs.lan"
+$porngcsruser = ($porngcscreds.username).Split("@")[0]
+$porngcspassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($porngcscreds.password))
+
+$ngcs_creds = $porngcsruser + ":" + $porngcspassword
 $bytes = [System.Text.Encoding]::UTF8.GetBytes($ngcs_creds)
 $encodedlogin=[Convert]::ToBase64String($bytes)
 $authheader = "Basic " + $encodedlogin

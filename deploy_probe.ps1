@@ -98,7 +98,7 @@ $numcpu = 1
 $ram = 2
 
 #Ask for credentials and connect to vCenter
-$myCredentials = Get-Credential -Message "Type user credentials for the vCenter connection"
+$myCredentials = Get-Credential -WarningAction:SilentlyContinue -Message "Please provide credentials from @ionos.com to connect to vcenter" -username "@ionos.com"
 
 foreach ($probe in $probeList)
 {
