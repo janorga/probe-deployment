@@ -37,6 +37,36 @@ Param(
     [Parameter(Mandatory = $True)] [string]$probeFile = ""
     )
 
+function Check-NetConnection($computername,$port,$timeout=200,$verbose=$false) {
+            $tcp = New-Object System.Net.Sockets.TcpClient;
+            try {
+                $connect=$tcp.BeginConnect($computername,$port,$null,$null)
+                $wait = $connect.AsyncWaitHandle.WaitOne($timeout,$false)
+                if(!$wait){
+                    $null=$tcp.EndConnect($connect)
+                    $tcp.Close()
+                    if($verbose){
+                        Write-Host "Connection Timeout" -ForegroundColor Red
+                        }
+                    Return $false
+                }else{
+                    $error.Clear()
+                    $null=$tcp.EndConnect($connect) # Dispose of the connection to release memory
+                    if(!$?){
+                        if($verbose){
+                            write-host $error[0].Exception.Message -ForegroundColor Red
+                            }
+                        $tcp.Close()
+                        return $false
+                        }
+                    $tcp.Close()
+                    Return $true
+                }
+            } catch {
+                return $false
+            }
+}
+
 if (!$probeFile)
     {
     Write-Host "Please, give the path to the CSV resulted of the deploy process!" -ForegroundColor Red
@@ -160,7 +190,7 @@ $sshpass = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropSe
 # Variables for Foreman REST API
         
 
-$password_ngcs = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password_ngcs))
+#$password_ngcs = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($password_ngcs))
 $porngcscreds = Get-Credential -WarningAction:SilentlyContinue -Message "Please provide credentials from @por-ngcs.lan to connect to remote desktop" -username "@por-ngcs.lan"
 $porngcsruser = ($porngcscreds.username).Split("@")[0]
 $porngcspassword = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($porngcscreds.password))
@@ -192,9 +222,8 @@ foreach ($probe in $probeList)
     do {
         Write-Host "Waiting for server to respond over SSH ..."
         Start-Sleep 3      
-      } until(Test-NetConnection -ComputerName $server -Port $port | ? { $_.TcpTestSucceeded } )
+      } until(Check-NetConnection -computerName $server -Port $port -timeout 5 )
 
-  
     if ({ $_.TcpTestSucceeded } -eq "True") {
 
         Write-Host "Server $(server) is responding"
