@@ -232,13 +232,21 @@ foreach ($probe in $probeList)
         
     # Force puppet agent for the first time to register against Foreman
 
+    if ($isPre){
     Write-Output y | plink -pw $sshpass -ssh -l root $probefqdn "exit"
     plink -batch -pw $sshpass -l root $probefqdn "puppet agent -t"
         Write-Host "Force Puppet agent to refresh in $($probe.name)" -ForegroundColor Green
-
+    }
+    else {
+        Write-Output y | plink -pw $sshpass -ssh -l root $probefqdn "exit"
+    plink -batch -pw $sshpass -l root $probefqdn "echo -e "nameserver 212.227.123.16" > /etc/resolv.conf"
+    plink -batch -pw $sshpass -l root $probefqdn "echo -e "nameserver 212.227.123.17" >> /etc/resolv.conf"
+    plink -batch -pw $sshpass -l root $probefqdn "puppet agent -t --server ngcs-puppet2.com.schlund.de --waitforcert 5"
+        Write-Host "Force Puppet agent to refresh in $($probe.name)" -ForegroundColor Green
+    }
 
         
-     # Searching for HostGroupID over Foreman REST API
+     # Searching for HostGroupID of NGCS_PROBE over Foreman REST API
 
     $params_search_hostgroup = @{
     Uri         = "https://por-puppet2.por-ngcs.lan/api/hostgroups`?search=name=`"ngcs_probe`""
