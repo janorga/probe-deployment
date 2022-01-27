@@ -222,7 +222,7 @@ foreach ($probe in $probeList)
     do {
         Write-Host "Waiting for server to respond over SSH ..."
         Start-Sleep 3      
-      } until(Check-NetConnection -computerName $server -Port $port -timeout 5 )
+      } until(Check-NetConnection -computerName $server -Port $port)
 
     if ({ $_.TcpTestSucceeded } -eq "True") {
 
