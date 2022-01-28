@@ -239,6 +239,7 @@ foreach ($probe in $probeList)
     }
     else {
         Write-Output y | plink -pw $sshpass -ssh -l root $probefqdn "exit"
+    plink -batch -pw $sshpass -l root $probefqdn "sed -i '/DNS1\|DNS2/d' /etc/sysconfig/network-scripts/ifcfg-ens192"
     plink -batch -pw $sshpass -l root $probefqdn "echo -e "nameserver 212.227.123.16" > /etc/resolv.conf"
     plink -batch -pw $sshpass -l root $probefqdn "echo -e "nameserver 212.227.123.17" >> /etc/resolv.conf"
     plink -batch -pw $sshpass -l root $probefqdn "puppet agent -t --server ngcs-puppet2.com.schlund.de --waitforcert 5"
