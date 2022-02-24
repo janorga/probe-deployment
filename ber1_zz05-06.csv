@@ -1,5 +1,5 @@
 "name","ipadd4","ipadd6","cluster","portgroup","privnet","mac","dhcpfqdn"
 "de-ber-rsng1zz05-01","85.215.111.16","2a01:239:181f:8000::1","ber1-network","nws-vmvlan301","nws-dummy","00:50:56:8c:29:38","ber1-dhcp1.por-ngcs.lan"
-"de-ber-rsng1zz05-02","86.215.111.17","2a01:239:181f:8000::2","ber1-network","nws-vmvlan301","nws-dummy","00:50:56:8c:8a:57","ber1-dhcp1.por-ngcs.lan"
-"de-ber-rsng1zz06-01","87.215.111.20","2a01:239:181f:8000::3","ber1-network","nws-vmvlan311","nws-dummy","00:50:56:8c:0c:85","ber1-dhcp1.por-ngcs.lan"
-"de-ber-rsng1zz06-02","88.215.111.21","2a01:239:181f:8000::4","ber1-network","nws-vmvlan311","nws-dummy","00:50:56:8c:18:97","ber1-dhcp1.por-ngcs.lan"
+"de-ber-rsng1zz05-02","85.215.111.17","2a01:239:181f:8000::2","ber1-network","nws-vmvlan301","nws-dummy","00:50:56:8c:8a:57","ber1-dhcp1.por-ngcs.lan"
+"de-ber-rsng1zz06-01","85.215.111.20","2a01:239:181f:8000::3","ber1-network","nws-vmvlan311","nws-dummy","00:50:56:8c:0c:85","ber1-dhcp1.por-ngcs.lan"
+"de-ber-rsng1zz06-02","85.215.111.21","2a01:239:181f:8000::4","ber1-network","nws-vmvlan311","nws-dummy","00:50:56:8c:18:97","ber1-dhcp1.por-ngcs.lan"
