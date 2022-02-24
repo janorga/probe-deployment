@@ -1,0 +1,3 @@
+"name","ipadd4","ipadd6","cluster","portgroup","privnet","mac","dhcpfqdn"
+"de-ber-rsng1zz05-02","85.215.111.17","2a01:239:181f:8000::2","ber1-network","nws-vmvlan301","nws-dummy","00:50:56:8c:8a:57","ber1-dhcp1.por-ngcs.lan"
+
