@@ -167,9 +167,12 @@ foreach ($probe in $probeList)
                 $site = "pre2"
             }
             
-    # Get vCenter and power on VM
-
-    $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
+	# Get vCenter and connect
+    if ($probe.vcenter -eq ""){
+		$destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
+	}else{
+		$destVcenter = "$($probe.vcenter).por-ngcs.lan"
+	}
     Write-Host "Connecting to $destVcenter to power on $($probe.name) " -ForegroundColor Cyan -BackgroundColor Blue
     #$vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
     Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue        
