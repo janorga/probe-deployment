@@ -18,39 +18,106 @@ dhcpfqdn: specifiy the fqdn that will relies on the public IP so during the scri
 Mandatory
 You must specify the path to your CSV file, see description for more details about it.
 Default value: -
-.PARAMETER priv_key
-Mandatory
-Specify the path to your rsa private key file for the PSS User , if you use Windows 10/2K19 you must provide it with RSA format, if not then PPK file for the PLINK utility.
 .EXAMPLE
-.\deploy_probe.ps1 -probeFile pathdeprobefile -priv_key pathofyourrsakeypssuser
-Execute the script with the path to your CSV file and the RSA priv key for PSS User with default DNS registry creation.
+.\deploy_probe.ps1 -probeFile pathdeprobefile 
+Execute the script with the path to your CSV file for PSS User with default DNS registry creation.
 .EXAMPLE
-.\deploy_probe.ps1 -probeFile pathdeprobefile -priv_key pathofyourrsakeypssuser -createdns 0 -force 1
-Execute the script with the path to your CSV file and the RSA priv key for PSS User and no DNS registry creation.
+.\deploy_probe.ps1 -probeFile pathdeprobefile  -createdns 0 -force 1
+Execute the script with the path to your CSV file for PSS User and no DNS registry creation.
 .LINK 
 Online version: https://confluence.united-internet.org/display/~jlobatoalonso/deploy+probe+script
 .NOTES
 2021 Javier Lobato 
 2021/09/22 First Release
+2022/03/08 Change script to use VAULT for credentials and for pssuserkey and to get vcenter and datastore from CSV (if given) to do not calculate it for internal vcenters
 #>
 
 Param(
     [Parameter(Mandatory = $True)] [string]$probeFile = "",
-    [Parameter(Mandatory = $True)] [string]$priv_key = "",
     [Boolean]$force = $false,
     [Boolean]$createdns = $true
     )
+
+function VAULT-GetToken {
+	Param (
+		[Parameter(Mandatory)][String] $uri,
+		[Parameter(Mandatory)][System.Management.Automation.PSCredential]$credentials
+	)
+	$vaultusername=($credentials.username).Split("@")[0]
+	$vaultuserpass=[Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($credentials.password))
+	$jsonPayload = [PSCustomObject]@{"password"= "$vaultuserpass"} | ConvertTo-Json
+	$irmParams = @{
+					Uri    = "$uri/v1/auth/ldap/login/$vaultusername"
+					Body   = $($jsonPayload | ConvertFrom-Json | ConvertTo-Json -Compress)
+					Method = 'Post'
+				}
+
+	try{
+		$result=Invoke-RestMethod @irmParams
+		return $result.auth.client_token
+	}catch{
+		throw $_
+	}
+}
+
+function VAULT-GetVault {
+	Param (
+		[Parameter(Mandatory)][String] $uri,
+		[Parameter(Mandatory)][String] $vaulttoken
+	)
+	[PSCustomObject]@{'uri'= $uri + '/v1/'
+                      'auth_header' = @{'X-Vault-Token'=$vaulttoken}
+                      } |
+    Write-Output
+}
+
+function VAULT-GetSecret {
+	Param (
+		[Parameter(Mandatory)][String] $uri,
+		[Parameter(Mandatory)][String] $engine,
+		[Parameter(Mandatory)][String] $secretpath,
+		[String] $secretkey,
+		[System.Management.Automation.PSCredential] $credentials,
+		[String] $vaulttoken
+	)
+	
+	if ($vaulttoken -ne ""){
+		#using token to get values	
+		$vaultobject = VAULT-GetVault -uri $uri -vaulttoken $vaulttoken
+	}
+	else{
+		#negotiating token usin credentials
+		$vaulttoken= VAULT-GetToken -uri $uri -credentials $credentials
+		$vaultobject = VAULT-GetVault -uri $uri -vaulttoken $vaulttoken
+	}
+	$secreturi= $vaultobject.uri + $engine + '/data/' + $secretpath + '?/?list=true'
+	try {
+		$result = Invoke-RestMethod -Uri $secreturi -Headers $VaultObject.auth_header
+		$data = $result | Select-Object -ExpandProperty data
+		if ($secretkey -ne ""){
+			#return only a desired key value
+			return $data.data.$secretkey
+		}
+		else {
+			#return all data and metadata in $secretpath
+			return $data
+		}
+	}
+	catch {
+		Throw $_
+	}
+	
+}
+
+$vaulturi="https://itohi-vault-live.server.lan"
+$vaultengine="ionos/techops/arsysproarch/secrets"
+$vaultpath="ngcs/deploys"
+
 
 if (!$probeFile){
     Write-Host "Please, give the path to the CSV file with all parameters as the proble_example.csv file in the DATA directory !" -ForegroundColor Red -BackgroundColor Black
 	exit 10
 }
-
-if (!$priv_key){
-    Write-Host "Please, give the path to your private key file for PSSUSER in PPK format or RSA if you are using Win10/2K19 !" -ForegroundColor Red -BackgroundColor Black
-	    exit 10
-}
-
 
 if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue)) {
     Add-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue
@@ -88,17 +155,28 @@ try {
     exit
 }
 
+#Ask for credentials and connect to vCenter
+$myCredentials = Get-Credential -WarningAction:SilentlyContinue -Message "Please provide credentials from @ionos.com to connect to vcenter" -username "@ionos.com"
+
 # Default variables
 $DomainProvisioningUser="DomainProvisioning@por-ngcs.lan"
-$DomainProvisioningPass="KI/%43e42ku7t412MHJG2..71fEWS(fd"
+$DomainProvisioningPass = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey DomainProvisioning
 $location = "network"
 $template = "co7_64_puppet5"
 $customization = "por-generic"
 $numcpu = 1
 $ram = 2
 
-#Ask for credentials and connect to vCenter
-$myCredentials = Get-Credential -WarningAction:SilentlyContinue -Message "Please provide credentials from @ionos.com to connect to vcenter" -username "@ionos.com"
+#create pssuser key
+$pssuser_key = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey pssuser_key
+[IO.File]::WriteAllLines("$($pwd.path)\tmp_key", $pssuser_key)
+$ACL=Get-Acl .\tmp_key
+$ACL.SetAccessRuleProtection($true,$false)
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("$(whoami)","write,read,modify","Allow")
+$ACL.SetAccessRule($AccessRule)
+$ACL | Set-Acl -Path tmp_key
+
+$priv_key = "$($pwd.path)\tmp_key"
 
 foreach ($probe in $probeList)
 {
