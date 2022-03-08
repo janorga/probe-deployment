@@ -358,5 +358,6 @@ else
 {
     plink_exec    
 }
+remove-item $priv_key -force
 
 Write-Host "CMK Probes correctly deployed, now you must ensure to create the anti-spoofing rules with the MACs on your CSV File$($probeFile) " -ForegroundColor Green -BackgroundColor Black
