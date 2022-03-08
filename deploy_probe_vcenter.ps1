@@ -175,33 +175,36 @@ foreach ($probe in $probeList)
         Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
 
         # Calculate datastore basing on probe name
-        if ($probe.name -like "*-01")
-        {
-            if ($dc -eq "rhr")
-            {
-                $datastore = "ds_${site}_site_internal3_01"
-            }
-            elseif ($dc -like "pr*")
-            {
-                $datastore = "ds_pre1_site_internal1_01"    
-            }
-            else
-            {
-                $datastore = "ds_${site}_site_internal1_01"
-            }            
-        }
-        elseif ($probe.name -like "*-02")
-        {
-            if ($dc -like "pr*")
-            {
-                $datastore = "ds_pre1_site_internal2_01"
-            }
-            else
-            {
-            $datastore = "ds_${site}_site_internal2_01"
-            }
-        }
-
+        if ($probe.datastore -eq ""){
+			if ($probe.name -like "*-01")
+			{
+				if ($dc -eq "rhr")
+				{
+					$datastore = "ds_${site}_site_internal3_01"
+				}
+				elseif ($dc -like "pr*")
+				{
+					$datastore = "ds_pre1_site_internal1_01"    
+				}
+				else
+				{
+					$datastore = "ds_${site}_site_internal1_01"
+				}            
+			}
+			elseif ($probe.name -like "*-02")
+			{
+				if ($dc -like "pr*")
+				{
+					$datastore = "ds_pre1_site_internal2_01"
+				}
+				else
+				{
+				$datastore = "ds_${site}_site_internal2_01"
+				}
+			}
+		}else{
+			$datastore=$probe.datastore
+		}
         # Prepare customization and deploy VM
         Get-OSCustomizationSpec -Name $probe.name -ErrorAction SilentlyContinue | Remove-OSCustomizationSpec -Confirm:$false
         #Write-Host  "`$oscust = New-OSCustomizationSpec -Name $($probe.name) -Type NonPersistent -OSCustomizationSpec $customization"
