@@ -169,7 +169,11 @@ foreach ($probe in $probeList)
             }
 
         # Get vCenter and connect
-        $destVcenter = "$($probe.vcenter).por-ngcs.lan"
+        if ($probe.vcenter -eq ""){
+			$destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
+		}else{
+			$destVcenter = "$($probe.vcenter).por-ngcs.lan"
+		}
         Write-Host "We are about to connect to $destVcenter to create $($probe.name)!`n" -ForegroundColor Cyan -BackgroundColor Blue
         #$vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
         Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
