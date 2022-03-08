@@ -169,39 +169,46 @@ foreach ($probe in $probeList)
             }
 
         # Get vCenter and connect
-        $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
+        if ($probe.vcenter -eq ""){
+			$destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
+		}else{
+			$destVcenter = "$($probe.vcenter).por-ngcs.lan"
+		}
         Write-Host "We are about to connect to $destVcenter to create $($probe.name)!`n" -ForegroundColor Cyan -BackgroundColor Blue
         #$vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
         Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
 
         # Calculate datastore basing on probe name
-        if ($probe.name -like "*-01")
-        {
-            if ($dc -eq "rhr")
-            {
-                $datastore = "ds_${site}_site_internal3_01"
-            }
-            elseif ($dc -like "pr*")
-            {
-                $datastore = "ds_pre1_site_internal1_01"    
-            }
-            else
-            {
-                $datastore = "ds_${site}_site_internal1_01"
-            }            
-        }
-        elseif ($probe.name -like "*-02")
-        {
-            if ($dc -like "pr*")
-            {
-                $datastore = "ds_pre1_site_internal2_01"
-            }
-            else
-            {
-            $datastore = "ds_${site}_site_internal2_01"
-            }
-        }
-
+        if ($probe.datastore -eq ""){
+			if ($probe.name -like "*-01")
+			{
+				if ($dc -eq "rhr")
+				{
+					$datastore = "ds_${site}_site_internal3_01"
+				}
+				elseif ($dc -like "pr*")
+				{
+					$datastore = "ds_pre1_site_internal1_01"    
+				}
+				else
+				{
+					$datastore = "ds_${site}_site_internal1_01"
+				}            
+			}
+			elseif ($probe.name -like "*-02")
+			{
+				if ($dc -like "pr*")
+				{
+					$datastore = "ds_pre1_site_internal2_01"
+				}
+				else
+				{
+				$datastore = "ds_${site}_site_internal2_01"
+				}
+			}
+		}else{
+			$datastore=$probe.datastore
+		}
         # Prepare customization and deploy VM
         Get-OSCustomizationSpec -Name $probe.name -ErrorAction SilentlyContinue | Remove-OSCustomizationSpec -Confirm:$false
         #Write-Host  "`$oscust = New-OSCustomizationSpec -Name $($probe.name) -Type NonPersistent -OSCustomizationSpec $customization"
