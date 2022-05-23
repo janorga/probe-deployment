@@ -47,7 +47,7 @@ if (!$probeFile){
 	exit 10
 }
 
-if (!destVcenter){
+if (!$destVcenter){
     Write-Host "Please, give the destination vcenter target in FQDN format to deploy probes!" -ForegroundColor Red -BackgroundColor Black
 	    exit 10
 }
