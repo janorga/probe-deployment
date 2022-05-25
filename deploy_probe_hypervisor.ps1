@@ -180,11 +180,11 @@ foreach ($probe in $probeList)
         {
             if ($dc -eq "rhr")
             {
-                $datastore = "ds_int1_net_01"
+                $datastore = "ds_int1_net1_01"
             }
             elseif ($dc -eq "ber")
             {
-                $datastore = "ds_int1_net_01"   
+                $datastore = "ds_int1_net1_01"   
             }
             elseif ($dc -like "pr*")
             {
@@ -192,7 +192,7 @@ foreach ($probe in $probeList)
             }
             else
             {
-                $datastore = "ds_int1_net_01"
+                $datastore = "ds_int1_net1_01"
             }            
         }
         elseif ($probe.name -like "*-02")
@@ -203,14 +203,16 @@ foreach ($probe in $probeList)
             }
             elseif ($dc -eq "ber")
             {
-                $datastore = "ds_int2_net_01"   
+                $datastore = "ds_int2_net2_01"   
             }
             else
             {
-            $datastore = "ds_int2_net_01"
+            $datastore = "ds_int2_net2_01"
             }
         }
-
+		
+		Write-Host "EL VALOR DEL DATASTORE CALCULADO ES $datastore" -ForegroundColor yellow
+		
         # Prepare customization and deploy VM
         Get-OSCustomizationSpec -Name $probe.name -ErrorAction SilentlyContinue | Remove-OSCustomizationSpec -Confirm:$false
         #Write-Host  "`$oscust = New-OSCustomizationSpec -Name $($probe.name) -Type NonPersistent -OSCustomizationSpec $customization"
@@ -227,11 +229,12 @@ foreach ($probe in $probeList)
         $vm = New-VM -Server $destVcenter -Name $probe.name -Template (Get-template -Name $template) -ResourcePool (Get-Cluster -Name $probe.cluster) -OSCustomizationSpec $oscust -Datastore $datastore -Location (Get-Folder -Name $location -Type "VM")
         Get-NetworkAdapter -VM (Get-VM -Name $probe.name) | Set-NetworkAdapter -NetworkName $probe.portgroup -Confirm:$false -StartConnected:$true
         Get-VM -Name $probe.name | Set-VM -NumCpu $numcpu -MemoryGB $ram -Confirm:$false
-        if ($probe.privnet -ne "")
-        {
-            New-NetworkAdapter -VM $vm -Portgroup (Get-VDPortgroup -Name $probe.privnet) -StartConnected:$true -Type:Vmxnet3 -Confirm:$false
-        }
-        # Start-VM -Server $vcenter -VM $probe.name
+        #### No se necesita añadir interfaces adicionales
+		#if ($probe.privnet -ne "")
+        #{
+        #    New-NetworkAdapter -VM $vm -networkname (Get-virtualnetwork -Name $probe.privnet) -StartConnected:$true -Type:Vmxnet3 -Confirm:$false
+        #}
+		# Start-VM -Server $vcenter -VM $probe.name
         # Export MAC address to the CSV file
         # Add the information of VM and MAC address to a variable
         
