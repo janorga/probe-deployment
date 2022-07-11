@@ -44,6 +44,82 @@ Param(
     [Boolean]$createdns = $true
     )
 
+function VAULT-GetToken {
+	Param (
+		[Parameter(Mandatory)][String] $uri,
+		[Parameter(Mandatory)][System.Management.Automation.PSCredential]$credentials
+	)
+	$vaultusername=($credentials.username).Split("@")[0]
+	$vaultuserpass=[Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($credentials.password))
+	$jsonPayload = [PSCustomObject]@{"password"= "$vaultuserpass"} | ConvertTo-Json
+	$irmParams = @{
+					Uri    = "$uri/v1/auth/ldap/login/$vaultusername"
+					Body   = $($jsonPayload | ConvertFrom-Json | ConvertTo-Json -Compress)
+					Method = 'Post'
+				}
+
+	try{
+		$result=Invoke-RestMethod @irmParams
+		return $result.auth.client_token
+	}catch{
+		throw $_
+	}
+}
+
+function VAULT-GetVault {
+	Param (
+		[Parameter(Mandatory)][String] $uri,
+		[Parameter(Mandatory)][String] $vaulttoken
+	)
+	[PSCustomObject]@{'uri'= $uri + '/v1/'
+                      'auth_header' = @{'X-Vault-Token'=$vaulttoken}
+                      } |
+    Write-Output
+}
+
+function VAULT-GetSecret {
+	Param (
+		[Parameter(Mandatory)][String] $uri,
+		[Parameter(Mandatory)][String] $engine,
+		[Parameter(Mandatory)][String] $secretpath,
+		[String] $secretkey,
+		[System.Management.Automation.PSCredential] $credentials,
+		[String] $vaulttoken
+	)
+	
+	if ($vaulttoken -ne ""){
+		#using token to get values	
+		$vaultobject = VAULT-GetVault -uri $uri -vaulttoken $vaulttoken
+	}
+	else{
+		#negotiating token usin credentials
+		$vaulttoken= VAULT-GetToken -uri $uri -credentials $credentials
+		$vaultobject = VAULT-GetVault -uri $uri -vaulttoken $vaulttoken
+	}
+	$secreturi= $vaultobject.uri + $engine + '/data/' + $secretpath + '?/?list=true'
+	try {
+		$result = Invoke-RestMethod -Uri $secreturi -Headers $VaultObject.auth_header
+		$data = $result | Select-Object -ExpandProperty data
+		if ($secretkey -ne ""){
+			#return only a desired key value
+			return $data.data.$secretkey
+		}
+		else {
+			#return all data and metadata in $secretpath
+			return $data
+		}
+	}
+	catch {
+		Throw $_
+	}
+	
+}
+
+$vaulturi="https://itohi-vault-live.server.lan"
+$vaultengine="ionos/techops/arsysproarch/secrets"
+$vaultpath="ngcs/deploys"
+
+
 if (!$probeFile){
     Write-Host "Please, give the path to the CSV file with all parameters as the proble_example.csv file in the DATA directory !" -ForegroundColor Red -BackgroundColor Black
 	exit 10
