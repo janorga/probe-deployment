@@ -13,7 +13,9 @@ portgroup: vlan of the pulic interface
 privnet: vlan for the private network interface
 mac: this parameter will be automatically feeded during the script just after the VM creation
 dhcpfqdn: specifiy the fqdn that will relies on the public IP so during the script, the DHCP reervation will be automatically created.
-
+.PARAMETER ignorevault
+If you set it to true, it will not use VAULT and it ask you for all credentials
+Default value: $false
 .PARAMETER probeFile
 Mandatory
 You must specify the path to your CSV file, see description for more details about it.
