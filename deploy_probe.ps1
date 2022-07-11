@@ -35,6 +35,7 @@ Online version: https://confluence.united-internet.org/display/~jlobatoalonso/de
 Param(
     [Parameter(Mandatory = $True)] [string]$probeFile = "",
     [Boolean]$force = $false,
+	[Boolean]$ignorevault = $false,
     [Boolean]$createdns = $true
     )
 
@@ -158,17 +159,22 @@ try {
 #Ask for credentials and connect to vCenter
 $myCredentials = Get-Credential -WarningAction:SilentlyContinue -Message "Please provide credentials from @ionos.com to connect to vcenter" -username "@ionos.com"
 
-# Default variables
-$DomainProvisioningUser="DomainProvisioning@por-ngcs.lan"
-$DomainProvisioningPass = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey DomainProvisioning
-$location = "network"
-$template = "co7_64_puppet5"
-$customization = "por-generic"
-$numcpu = 1
-$ram = 2
+if (!$ignorevault){
+	# Default variables
+	$DomainProvisioningUser="DomainProvisioning@por-ngcs.lan"
+	$DomainProvisioningPass = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey DomainProvisioning
+	
+	#create pssuser key
+	$pssuser_key = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey pssuser_key
+}else{
+	# Default variables
+	$DomainProvisioningUser="DomainProvisioning@por-ngcs.lan"
+	$DomainProvisioningPass = Read-Host ("Please, introduce DomainProvisioning@por-ngcs.lan password")
+	
+	#create pssuser key
+	$pssuser_key = get-content .\pssuser.key
+}
 
-#create pssuser key
-$pssuser_key = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey pssuser_key
 [IO.File]::WriteAllLines("$($pwd.path)\tmp_key", $pssuser_key)
 $ACL=Get-Acl .\tmp_key
 $ACL.SetAccessRuleProtection($true,$false)
@@ -177,6 +183,12 @@ $ACL.SetAccessRule($AccessRule)
 $ACL | Set-Acl -Path tmp_key
 
 $priv_key = "$($pwd.path)\tmp_key"
+
+$location = "network"
+$template = "co7_64_puppet5"
+$customization = "por-generic"
+$numcpu = 1
+$ram = 2
 
 foreach ($probe in $probeList)
 {
