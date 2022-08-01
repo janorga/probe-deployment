@@ -41,7 +41,8 @@ Param(
     [Parameter(Mandatory = $True)] [string]$probeFile = "",
 	[Boolean]$ignorevault = $false,
     [Boolean]$force = $false,
-    [Boolean]$createdns = $true
+    [Boolean]$createdns = $true,
+	[string]$destVcenter= ""
     )
 
 function VAULT-GetToken {
@@ -256,7 +257,7 @@ foreach ($probe in $probeList)
             }
         }
         $site = $dc + $siteDigit
-        $site = "ber-intvc1"
+
 
         # Exception for PRE
         if ( ($isPre -eq "p") -and ($siteDigit -gt 2) )
@@ -266,7 +267,7 @@ foreach ($probe in $probeList)
 
         # Get vCenter and connect
         #$destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
-        $destVcenter = "ber-intvc1.por-ngcs.lan"
+	    #$destVcenter = "ber-intvc1.por-ngcs.lan"
         Write-Host "We are about to connect to $destVcenter to create $($probe.name)!`n" -ForegroundColor Cyan -BackgroundColor Blue
         #$vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
         Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
@@ -321,7 +322,8 @@ foreach ($probe in $probeList)
         }
         #$vm = New-VM -Server $vcenter -Name $probe.name -Template (Get-template -Name $template) -ResourcePool (Get-Cluster -Name $probe.cluster) -OSCustomizationSpec $oscust -Datastore $datastore -Location (Get-Folder -Name $location -Type "VM")
         $vm = New-VM -Server $destVcenter -Name $probe.name -Template (Get-template -Name $template) -ResourcePool (Get-Cluster -Name $probe.cluster) -OSCustomizationSpec $oscust -Datastore $datastore -Location (Get-Folder -Name $location -Type "VM")
-        Get-NetworkAdapter -VM (Get-VM -Name $probe.name) | Set-NetworkAdapter -NetworkName $probe.portgroup -Confirm:$false -StartConnected:$true
+        #"`$vm = New-VM -Server $destVcenter -Name $($probe.name) -Template (Get-template -Name $template) -ResourcePool (Get-Cluster -Name $($probe.cluster)) -OSCustomizationSpec $oscust -Datastore $datastore -Location (Get-Folder -Name $location -Type `"VM`")"
+		Get-NetworkAdapter -VM (Get-VM -Name $probe.name) | Set-NetworkAdapter -NetworkName $probe.portgroup -Confirm:$false -StartConnected:$true
         Get-VM -Name $probe.name | Set-VM -NumCpu $numcpu -MemoryGB $ram -Confirm:$false
         if ($probe.privnet -ne "")
         {
