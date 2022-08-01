@@ -1,0 +1,2 @@
+"name","ipadd4","ipadd6","cluster","portgroup","privnet","mac","dhcpfqdn","vcenter","datastore"
+"gb-glo-sgng2zz208-02","77.68.19.119","2a00:da00:181f:8000:0000:0000:0000:0108","internal","vmvlan304","","00:50:56:bb:23:77","glo2-dhcp1.por-ngcs.lan","glo-intvc2","ds_int2_net2_01"

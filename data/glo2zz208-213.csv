@@ -1,0 +1,13 @@
+name,ipadd4,ipadd6,cluster,portgroup,privnet,mac,dhcpfqdn,vcenter,datastore
+gb-glo-sgng2zz208-01,77.68.19.118,2a00:da00:181f:8000::107,glo2-network,nws-vmvlan304,,00:50:56:bb:3d:95,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int1_net_01
+gb-glo-sgng2zz208-02,77.68.19.119,2a00:da00:181f:8000::108,glo2-network,nws-vmvlan304,,00:50:56:bb:23:77,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int2_net_01
+gb-glo-sgng2zz209-01,77.68.19.120,2a00:da00:181f:8000::109,glo2-network,nws-vmvlan305,,00:50:56:af:46:28,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int1_net_01
+gb-glo-sgng2zz209-02,77.68.19.121,2a00:da00:181f:8000::10a,glo2-network,nws-vmvlan305,,00:50:56:af:c4:8b,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int2_net_01
+gb-glo-sgng2zz210-01,77.68.19.122,2a00:da00:181f:8000::10b,glo2-network,nws-vmvlan306,,00:50:56:bb:fa:91,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int1_net_01
+gb-glo-sgng2zz210-02,77.68.19.123,2a00:da00:181f:8000::10c,glo2-network,nws-vmvlan306,,00:50:56:bb:e5:24,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int2_net_01
+gb-glo-sgng2zz211-01,77.68.19.124,2a00:da00:181f:8000::10d,glo2-network,nws-vmvlan307,,00:50:56:af:cb:e7,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int1_net_01
+gb-glo-sgng2zz211-02,77.68.19.125,2a00:da00:181f:8000::10e,glo2-network,nws-vmvlan307,,00:50:56:af:df:ea,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int2_net_01
+gb-glo-sgng2zz212-01,77.68.19.126,2a00:da00:181f:8000::10f,glo2-network,nws-vmvlan308,,00:50:56:bb:84:b0,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int1_net_01
+gb-glo-sgng2zz212-02,77.68.19.127,2a00:da00:181f:8000::110,glo2-network,nws-vmvlan308,,00:50:56:bb:f6:6f,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int2_net_01
+gb-glo-sgng2zz213-01,77.68.19.128,2a00:da00:181f:8000::111,glo2-network,nws-vmvlan309,,00:50:56:af:c8:57,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int1_net_01
+gb-glo-sgng2zz213-02,77.68.19.129,2a00:da00:181f:8000::112,glo2-network,nws-vmvlan309,,00:50:56:af:35:e6,glo2-dhcp1.por-ngcs.lan,glo-intvc2,ds_int2_net_01
