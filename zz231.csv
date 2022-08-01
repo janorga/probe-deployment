@@ -1,3 +1,0 @@
-"name","ipadd4","ipadd6","cluster","datastore","portgroup","privnet","mac","dhcpfqdn"
-"es-lgr-lpng2zz231-01","82.223.186.66","2001:ba0:181f:8000::135","por2-vc06-cl01","ds_por2_site_internal1_01","vmvlan331","privnet3799","00:50:56:be:17:a3","por2-dhcp7.por-ngcs.lan"
-"es-lgr-lpng2zz231-02","82.223.186.67","2001:ba0:181f:8000::136","por2-vc06-cl02","ds_por2_site_internal2_01","vmvlan331","privnet3799","00:50:56:be:2d:46","por2-dhcp7.por-ngcs.lan"
