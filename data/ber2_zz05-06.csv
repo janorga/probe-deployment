@@ -1,5 +1,6 @@
-name,ipadd4,ipadd6,cluster,portgroup,privnet,mac,dhcpfqdn
-de-ber-rsng2zz205-01,85.215.111.22,2a01:239:1f:8000::101,ber2-network,nws-vmvlan301,nws-dummy,00:50:56:a0:60:ea,ber2-dhcp1.por-ngcs.lan
-de-ber-rsng2zz205-02,85.215.111.23,2a01:239:1f:8000::102,ber2-network,nws-vmvlan301,nws-dummy,00:50:56:a0:0c:66,ber2-dhcp1.por-ngcs.lan
-de-ber-rsng2zz206-01,85.215.111.24,2a01:239:1f:8000::103,ber2-network,nws-vmvlan302,nws-dummy,00:50:56:a0:37:3a,ber2-dhcp1.por-ngcs.lan
-de-ber-rsng2zz206-02,85.215.111.25,2a01:239:1f:8000::104,ber2-network,nws-vmvlan302,nws-dummy,00:50:56:a0:3a:2b,ber2-dhcp1.por-ngcs.lan
+
+"name","ipadd4","ipadd6","cluster","portgroup","privnet","mac","dhcpfqdn"
+"de-ber-rsng2zz205-01","85.215.111.22","2a01:239:1f:8000::101","ber2-network","nws-vmvlan301","nws-dummy","00:50:56:a0:60:ea","ber2-dhcp1.por-ngcs.lan"
+"de-ber-rsng2zz205-02","85.215.111.23","2a01:239:1f:8000::102","ber2-network","nws-vmvlan301","nws-dummy","00:50:56:a0:0c:66","ber2-dhcp1.por-ngcs.lan"
+"de-ber-rsng2zz206-01","85.215.111.24","2a01:239:1f:8000::103","ber2-network","nws-vmvlan302","nws-dummy","00:50:56:a0:37:3a","ber2-dhcp1.por-ngcs.lan"
+"de-ber-rsng2zz206-02","85.215.111.25","2a01:239:1f:8000::104","ber2-network","nws-vmvlan302","nws-dummy","00:50:56:a0:3a:2b","ber2-dhcp1.por-ngcs.lan"
