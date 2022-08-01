@@ -1,3 +1,3 @@
 "name","ipadd4","ipadd6","cluster","portgroup","privnet","mac","dhcpfqdn"
-"es-lgr-lpngpdzz02-01","82.223.186.64","2001:ba0:181f:8000::4b","internal","hypinfravlan195","dummy","",""
-"es-lgr-lpngpdzz02-02","82.223.186.65","2001:ba0:181f:8000::4c","internal","hypinfravlan195","dummy","",
+"es-lgr-lpngdzz02-01","82.223.186.64","2001:ba0:181f:8000::4b","internal","hypinfravlan195","dummy","00:50:56:8c:be:6d",""
+"es-lgr-lpngdzz02-02","82.223.186.65","2001:ba0:181f:8000::4c","internal","hypinfravlan195","dummy","00:50:56:8c:11:5d",""
