@@ -125,12 +125,6 @@ if (!$probeFile){
 	exit 10
 }
 
-if (!$priv_key){
-    Write-Host "Please, give the path to your private key file for PSSUSER in PPK format or RSA if you are using Win10/2K19 !" -ForegroundColor Red -BackgroundColor Black
-	    exit 10
-}
-
-
 if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue)) {
     Add-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue
     if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue)) {
