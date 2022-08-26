@@ -211,6 +211,8 @@ if (!$ignorevault){
 
 #create key to access via SSH
 
+Remove-Item "$($pwd.path)\tmp_key" -force -Confirm:$false -ErrorAction SilentlyContinue| out-null
+
 [IO.File]::WriteAllLines("$($pwd.path)\tmp_key", $pssuser_key)
 $ACL=Get-Acl .\tmp_key
 $ACL.SetAccessRuleProtection($true,$false)
