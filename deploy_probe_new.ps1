@@ -269,7 +269,7 @@ foreach ($probe in $probeList)
         
         $probe.mac = (get-vm -Name $probe.name | Get-NetworkAdapter -Name "Network adapter 1").MacAddress
                 
-        Disconnect-VIServer -Server $destVcenter -Confirm:$false | out-null
+        Disconnect-VIServer -Server $($probe.vcenter) -Confirm:$false | out-null
     }catch{
 		$error[0]
 		Write-Host "error creating probe $($probe.name)!!" -foregroundcolor red
