@@ -212,7 +212,6 @@ if (!$ignorevault){
 #create key to access via SSH
 
 Remove-Item "$($pwd.path)\tmp_key" -force -Confirm:$false -ErrorAction SilentlyContinue| out-null
-
 [IO.File]::WriteAllLines("$($pwd.path)\tmp_key", $pssuser_key)
 $ACL=Get-Acl .\tmp_key
 $ACL.SetAccessRuleProtection($true,$false)
@@ -272,6 +271,7 @@ foreach ($probe in $probeList)
                 
         Disconnect-VIServer -Server $destVcenter -Confirm:$false | out-null
     }catch{
+		$error[0]
 		Write-Host "error creating probe $($probe.name)!!" -foregroundcolor red
 	}
 	
