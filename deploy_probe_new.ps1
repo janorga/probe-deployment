@@ -3,12 +3,15 @@
 This scripts deploy CheckMK probe servers in batch mode with DHCP reservation and DNS register creation.
 .DESCRIPTION
 This script deploys CheckMK probes servers for the NGCS infrastrucure, you must provide a CSV file that include these headers.
-name,ipadd4,ipadd6,cluster,portgroup,privnet,mac,dhcpfqdn
+name,vcenter,site,ipadd4,ipadd6,cluster,datastore,portgroup,privnet,mac,dhcpfqdn
 
 name: name of the vm ( ex: es-lgr-lpngp1zz01-01)
+vcenter: the vcenter were you want to deploy it
+site: the site of the probe
 ipadd4: IPv4 of the VM for the public interface
 ipadd6: IPv6 of the VM for the public interface
 cluster: Datastore cluster location
+datastore: The target datastore
 portgroup: vlan of the pulic interface
 privnet: vlan for the private network interface
 mac: this parameter will be automatically feeded during the script just after the VM creation
@@ -31,10 +34,11 @@ Execute the script with the path to your CSV file and the RSA priv key for PSS U
 .\deploy_probe.ps1 -probeFile pathdeprobefile -priv_key pathofyourrsakeypssuser -createdns 0 -force 1
 Execute the script with the path to your CSV file and the RSA priv key for PSS User and no DNS registry creation.
 .LINK 
-Online version: https://confluence.united-internet.org/display/~jlobatoalonso/deploy+probe+script
+Online version: https://confluence.united-internet.org/display/TOARPA/NGCS+Probes+deploying
 .NOTES
 2021 Javier Lobato 
 2021/09/22 First Release
+2022/09/01 Fjsueiro. Generalize script to get all data from CSV instead calculate it (imposible due the continuos network and cluster changes)
 #>
 
 Param(

@@ -4,21 +4,28 @@ This scripts start CheckMK probe servers and add it to his correspondig hostgrou
 .DESCRIPTION
 This scripts start CheckMK probe servers and add it to his correspondig hostgroup in Foreman to inherit the right puppet classes.
 
-You must provide the CSV file result used in the previous "deploy_probe.ps1" script.
+You must provide the CSV file result used in the previous "deploy_probe.ps1" script with the following data:
 
-Ensure that Network have created the antispoofing firewall rules to have correct connectivity.
-
-name,ipadd4,ipadd6,cluster,portgroup,privnet,mac,dhcpfqdn
+name,vcenter,site,ipadd4,ipadd6,cluster,datastore,portgroup,privnet,mac,dhcpfqdn
 
 name: name of the vm ( ex: es-lgr-lpngp1zz01-01)
+vcenter: the vcenter were you want to deploy it
+site: the site of the probe
 ipadd4: IPv4 of the VM for the public interface
 ipadd6: IPv6 of the VM for the public interface
 cluster: Datastore cluster location
+datastore: The target datastore
 portgroup: vlan of the pulic interface
 privnet: vlan for the private network interface
-mac: this parameter will be automatically feeded during the script just after the VM creation
+mac: the MAC asigned by deploy_probe.ps1 script
 dhcpfqdn: specifiy the fqdn that will relies on the public IP so during the script, the DHCP reervation will be automatically created.
+name,ipadd4,ipadd6,cluster,portgroup,privnet,mac,dhcpfqdn
 
+Ensure that Network have created the antispoofing firewall rules to have correct connectivity.
+
+.PARAMETER ignorevault
+If you set it to true, it will not use VAULT and it ask you for all credentials
+Default value: $false
 .PARAMETER probeFile
 Mandatory
 You must specify the path to your CSV file, see description for more details about it.
@@ -27,10 +34,11 @@ Default value: -
 .\deploy_probe.ps1 -probeFile pathtoyourcsvresuldtdeployfile
 Execute the script with the path to your CSV result of the deployment script.
 .LINK 
-Online version: https://confluence.united-internet.org/display/~jlobatoalonso/deploy+probe+script
+Online version: https://confluence.united-internet.org/display/TOARPA/NGCS+Probes+deploying
 .NOTES
 2021 Javier Lobato 
 2021/10/15 First Release
+2022/09/01 Fjsueiro. Generalize script to get all data from CSV instead calculate it (imposible due the continuos network and cluster changes)
 #>
 
 Param(
