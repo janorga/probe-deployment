@@ -1,0 +1,2 @@
+"name","vcenter","site","ipadd4","ipadd6","cluster","datastore","portgroup","privnet","mac","dhcpfqdn"
+"es-lgr-lpng3zz305-02","por-intvc1.por-ngcs.lan","por3","82.223.186.77","2001:ba0:181f:8000::202","por3-network","ds_int2_net_01","nws-vmvlan301","nws-dummy","00:50:56:9a:6a:6e","por3-dhcp1.por-ngcs.lan"
