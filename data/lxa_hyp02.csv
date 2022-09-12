@@ -1,0 +1,3 @@
+"name","vcenter","site","ipadd4","ipadd6","cluster","datastore","portgroup","privnet","mac","dhcpfqdn"
+"us-lxa-slngdzz02-01","lxa-intvc2.por-ngcs.lan","lxa","74.208.143.94","2607:f1c0:181f:8000::45","internal","ds_int1_net1_01","hypinfravlan195","dummy","",""
+"us-lxa-slngdzz02-02","lxa-intvc2.por-ngcs.lan","lxa","74.208.143.95","2607:f1c0:181f:8000::46","internal","ds_int2_net2_01","hypinfravlan195","dummy","",""
