@@ -206,8 +206,8 @@ if (!$ignorevault){
 	$pssuser_key = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey pssuser_key
 }else{
 	# Default variables
-	$DomainProvisioningUser="DomainProvisioning@por-ngcs.lan"
-	$DomainProvisioningPass = Read-Host ("Please, introduce DomainProvisioning@por-ngcs.lan password")
+	$DomainProvisioningUser="network_dns_prov@por-ngcs.lan"
+	$DomainProvisioningPass = Read-Host ("Please, introduce network_dns_prov@por-ngcs.lan password")
 	
 	#create pssuser key
 	$pssuser_key = get-content .\pssuser.key
