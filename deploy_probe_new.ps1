@@ -123,7 +123,8 @@ function ssh_exec {
 
     foreach ($probe in $probeList) 
         {
-            $vlanfordhcp = (($probe.portgroup) -split "nws-vm")[1]
+			$probe.portgroup -match '(vlan\d\d\d)'
+            $vlanfordhcp = $matches[0]
             ssh -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
             Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for VM $($probe.name) with MAC $($probe.mac) on $($robe.dhcpfqdn) `n" -ForegroundColor Green
         }  
@@ -133,7 +134,8 @@ function plink_exec {
 
     foreach ($probe in $probelist)
     {
-        $vlanfordhcp = (($probe.portgroup) -split "nws-vm")[1]
+		$probe.portgroup -match '(vlan\d\d\d)'
+        $vlanfordhcp = $matches[0]
         plink -batch -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
         Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for VM $($probe.name) with MAC $($probe.mac) on $($robe.dhcpfqdn) `n" -ForegroundColor Green
 
@@ -291,10 +293,12 @@ $local_ssh = [bool] (Get-Command -ErrorAction Ignore -Type Application ssh)
 Write-Host "Connecting to DHCP Server to do the reservation, accept the SSH fingertprint for the first time `n`n" -ForegroundColor Cyan
 if ( $local_ssh )
 {
+	Write-Host "Using ssh binary" -foregroundcolor Cyan
 	ssh_exec
 }
 else 
 {
+	Write-Host "Using plink binary" -foregroundcolor Cyan
 	plink_exec    
 }
 
