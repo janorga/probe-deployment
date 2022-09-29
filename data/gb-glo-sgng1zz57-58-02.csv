@@ -1,0 +1,3 @@
+"name","vcenter","site","ipadd4","ipadd6","cluster","datastore","portgroup","privnet","mac","dhcpfqdn"
+"gb-glo-sgng1zz57-02","glo1-vc14.por-ngcs.lan","glo1","77.68.19.63","2a00:da00:181f:8000::6c","glo1-vc14-cl02","ds_glo1_site_internal2_01","vmvlan240","privnet3799","","glo1-dhcp11.por-ngcs.lan"
+"gb-glo-sgng1zz58-02","glo1-vc14.por-ngcs.lan","glo1","77.68.19.65","2a00:da00:181f:8000::6e","glo1-vc14-cl02","ds_glo1_site_internal2_01","vmvlan241","privnet3799","","glo1-dhcp9.por-ngcs.lan"
