@@ -6,6 +6,6 @@
 "gb-glo-sgng1zz56-01","glo1-vc13.por-ngcs.lan","glo1","77.68.19.60","2a00:da00:181f:8000::69","glo1-vc13-cl01","ds_glo1_site_internal1_01","vmvlan239","privnet3799","00:50:56:b2:ef:8e","glo1-dhcp11.por-ngcs.lan"
 "gb-glo-sgng1zz56-02","glo1-vc13.por-ngcs.lan","glo1","77.68.19.61","2a00:da00:181f:8000::6a","glo1-vc13-cl02","ds_glo1_site_internal2_01","vmvlan239","privnet3799","00:50:56:b2:5b:73","glo1-dhcp11.por-ngcs.lan"
 "gb-glo-sgng1zz57-01","glo1-vc14.por-ngcs.lan","glo1","77.68.19.62","2a00:da00:181f:8000::6b","glo1-vc14-cl01","ds_glo1_site_internal1_01","vmvlan240","privnet3799","00:50:56:bb:9b:04","glo1-dhcp11.por-ngcs.lan"
-"gb-glo-sgng1zz57-02","glo1-vc14.por-ngcs.lan","glo1","77.68.19.63","2a00:da00:181f:8000::6c","glo1-vc14-cl02","ds_glo1_site_internal1_02","vmvlan240","privnet3799","","glo1-dhcp11.por-ngcs.lan"
+"gb-glo-sgng1zz57-02","glo1-vc14.por-ngcs.lan","glo1","77.68.19.63","2a00:da00:181f:8000::6c","glo1-vc14-cl02","ds_glo1_site_internal2_01","vmvlan240","privnet3799","00:50:56:bb:9a:71","glo1-dhcp11.por-ngcs.lan"
 "gb-glo-sgng1zz58-01","glo1-vc14.por-ngcs.lan","glo1","77.68.19.64","2a00:da00:181f:8000::6d","glo1-vc14-cl01","ds_glo1_site_internal1_01","vmvlan241","privnet3799","00:50:56:bb:1d:8a","glo1-dhcp9.por-ngcs.lan"
-"gb-glo-sgng1zz58-02","glo1-vc14.por-ngcs.lan","glo1","77.68.19.65","2a00:da00:181f:8000::6e","glo1-vc14-cl02","ds_glo1_site_internal1_02","vmvlan241","privnet3799","","glo1-dhcp9.por-ngcs.lan"
+"gb-glo-sgng1zz58-02","glo1-vc14.por-ngcs.lan","glo1","77.68.19.65","2a00:da00:181f:8000::6e","glo1-vc14-cl02","ds_glo1_site_internal2_01","vmvlan241","privnet3799","00:50:56:bb:a6:6f","glo1-dhcp9.por-ngcs.lan"
