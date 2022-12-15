@@ -1,0 +1,7 @@
+"name","vcenter","site","ipadd4","ipadd6","cluster","datastore","portgroup","privnet","mac","dhcpfqdn"
+"gb-glo-sgng1zz59-01","glo1-vc15.por-ngcs.lan","glo1","77.68.19.66","2a00:da00:181f:8000::6f","glo1-vc15-cl01","ds_glo1_site_internal1_01","vmvlan259","privnet3799","00:50:56:87:53:c7","glo1-dhcp13.por-ngcs.lan"
+"gb-glo-sgng1zz59-02","glo1-vc15.por-ngcs.lan","glo1","77.68.19.67","2a00:da00:181f:8000::70","glo1-vc15-cl02","ds_glo1_site_internal2_01","vmvlan259","privnet3799","00:50:56:87:23:ef","glo1-dhcp13.por-ngcs.lan"
+"gb-glo-sgng1zz60-01","glo1-vc15.por-ngcs.lan","glo1","77.68.19.68","2a00:da00:181f:8000::71","glo1-vc15-cl01","ds_glo1_site_internal1_01","vmvlan260","privnet3799","00:50:56:87:df:7b","glo1-dhcp13.por-ngcs.lan"
+"gb-glo-sgng1zz60-02","glo1-vc15.por-ngcs.lan","glo1","77.68.19.69","2a00:da00:181f:8000::72","glo1-vc15-cl02","ds_glo1_site_internal2_01","vmvlan260","privnet3799","00:50:56:87:88:2c","glo1-dhcp13.por-ngcs.lan"
+"gb-glo-sgng1zz61-01","glo1-vc15.por-ngcs.lan","glo1","77.68.19.70","2a00:da00:181f:8000::73","glo1-vc15-cl01","ds_glo1_site_internal1_01","vmvlan261","privnet3799","00:50:56:87:ff:3f","glo1-dhcp13.por-ngcs.lan"
+"gb-glo-sgng1zz61-02","glo1-vc15.por-ngcs.lan","glo1","77.68.19.71","2a00:da00:181f:8000::74","glo1-vc15-cl02","ds_glo1_site_internal2_01","vmvlan261","privnet3799","00:50:56:87:5f:26","glo1-dhcp13.por-ngcs.lan"
