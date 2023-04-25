@@ -1,0 +1,3 @@
+"name","vcenter","site","ipadd4","ipadd6","cluster","datastore","portgroup","privnet","mac","dhcpfqdn"
+"de-rhr-bangdzz03-01","rhr-intvc1.por-ngcs.lan","rhr","212.227.42.86","2001:8d8:181f:8000::49","internal","rhr-fas04_ds01","hypinfravlan195","dummy","",""
+"de-rhr-bangdzz03-02","rhr-intvc1.por-ngcs.lan","rhr","212.227.42.87","2001:8d8:181f:8000::56","internal","ds_int2_net2_01","hypinfravlan195","dummy","",""
