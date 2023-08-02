@@ -37,89 +37,90 @@ Online version: https://confluence.united-internet.org/display/~jlobatoalonso/de
 Param(
     [Parameter(Mandatory = $True)] [string]$probeFile = "",
     [Boolean]$force = $false,
-	[Boolean]$ignorevault = $false,
+    [Boolean]$ignorevault = $false,
     [Boolean]$createdns = $true
-    )
+)
 
 function VAULT-GetToken {
-	Param (
-		[Parameter(Mandatory)][String] $uri,
-		[Parameter(Mandatory)][System.Management.Automation.PSCredential]$credentials
-	)
-	$vaultusername=($credentials.username).Split("@")[0]
-	$vaultuserpass=[Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($credentials.password))
-	$jsonPayload = [PSCustomObject]@{"password"= "$vaultuserpass"} | ConvertTo-Json
-	$irmParams = @{
-					Uri    = "$uri/v1/auth/ldap/login/$vaultusername"
-					Body   = $($jsonPayload | ConvertFrom-Json | ConvertTo-Json -Compress)
-					Method = 'Post'
+    Param (
+        [Parameter(Mandatory)][String] $uri,
+        [Parameter(Mandatory)][System.Management.Automation.PSCredential]$credentials
+    )
+    $vaultusername = ($credentials.username).Split("@")[0]
+    $vaultuserpass = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($credentials.password))
+    $jsonPayload = [PSCustomObject]@{"password" = "$vaultuserpass" } | ConvertTo-Json
+    $irmParams = @{
+        Uri    = "$uri/v1/auth/ldap/login/$vaultusername"
+        Body   = $($jsonPayload | ConvertFrom-Json | ConvertTo-Json -Compress)
+        Method = 'Post'
 				}
 
-	try{
-		$result=Invoke-RestMethod @irmParams
-		return $result.auth.client_token
-	}catch{
-		throw $_
-	}
+    try {
+        $result = Invoke-RestMethod @irmParams
+        return $result.auth.client_token
+    }
+    catch {
+        throw $_
+    }
 }
 
 function VAULT-GetVault {
-	Param (
-		[Parameter(Mandatory)][String] $uri,
-		[Parameter(Mandatory)][String] $vaulttoken
-	)
-	[PSCustomObject]@{'uri'= $uri + '/v1/'
-                      'auth_header' = @{'X-Vault-Token'=$vaulttoken}
-                      } |
+    Param (
+        [Parameter(Mandatory)][String] $uri,
+        [Parameter(Mandatory)][String] $vaulttoken
+    )
+    [PSCustomObject]@{'uri' = $uri + '/v1/'
+        'auth_header'       = @{'X-Vault-Token' = $vaulttoken }
+    } |
     Write-Output
 }
 
 function VAULT-GetSecret {
-	Param (
-		[Parameter(Mandatory)][String] $uri,
-		[Parameter(Mandatory)][String] $engine,
-		[Parameter(Mandatory)][String] $secretpath,
-		[String] $secretkey,
-		[System.Management.Automation.PSCredential] $credentials,
-		[String] $vaulttoken
-	)
+    Param (
+        [Parameter(Mandatory)][String] $uri,
+        [Parameter(Mandatory)][String] $engine,
+        [Parameter(Mandatory)][String] $secretpath,
+        [String] $secretkey,
+        [System.Management.Automation.PSCredential] $credentials,
+        [String] $vaulttoken
+    )
 	
-	if ($vaulttoken -ne ""){
-		#using token to get values	
-		$vaultobject = VAULT-GetVault -uri $uri -vaulttoken $vaulttoken
-	}
-	else{
-		#negotiating token usin credentials
-		$vaulttoken= VAULT-GetToken -uri $uri -credentials $credentials
-		$vaultobject = VAULT-GetVault -uri $uri -vaulttoken $vaulttoken
-	}
-	$secreturi= $vaultobject.uri + $engine + '/data/' + $secretpath + '?/?list=true'
-	try {
-		$result = Invoke-RestMethod -Uri $secreturi -Headers $VaultObject.auth_header
-		$data = $result | Select-Object -ExpandProperty data
-		if ($secretkey -ne ""){
-			#return only a desired key value
-			return $data.data.$secretkey
-		}
-		else {
-			#return all data and metadata in $secretpath
-			return $data
-		}
-	}
-	catch {
-		Throw $_
-	}
+    if ($vaulttoken -ne "") {
+        #using token to get values	
+        $vaultobject = VAULT-GetVault -uri $uri -vaulttoken $vaulttoken
+    }
+    else {
+        #negotiating token usin credentials
+        $vaulttoken = VAULT-GetToken -uri $uri -credentials $credentials
+        $vaultobject = VAULT-GetVault -uri $uri -vaulttoken $vaulttoken
+    }
+    $secreturi = $vaultobject.uri + $engine + '/data/' + $secretpath + '?/?list=true'
+    try {
+        $result = Invoke-RestMethod -Uri $secreturi -Headers $VaultObject.auth_header
+        $data = $result | Select-Object -ExpandProperty data
+        if ($secretkey -ne "") {
+            #return only a desired key value
+            return $data.data.$secretkey
+        }
+        else {
+            #return all data and metadata in $secretpath
+            return $data
+        }
+    }
+    catch {
+        Throw $_
+    }
 	
 }
 
-$vaulturi="https://itohi-vault-live.server.lan"
-$vaultengine="ionos/techops/arsysproarch/secrets"
-$vaultpath="ngcs/deploys"
+$vaulturi = "https://itohi-vault-live.server.lan"
+$vaultengine = "ionos/techops/arsysproarch/secrets"
+$vaultpath = "ngcs/deploys"
 
 
-if (!$probeFile){
+if (!$probeFile) {
     Write-Host "Please, give the path to the CSV file with all parameters as the proble_example.csv file in the DATA directory !" -ForegroundColor Red -BackgroundColor Black
-	exit 10
+    exit 10
 }
 
 if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue)) {
@@ -127,8 +128,7 @@ if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue))
     if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue)) {
         # If PowerCLI 5.8 snapins are not loaded, try importing the new PowerCLI 6.5 modules
         Get-Module -ListAvailable VM* | Import-Module
-        if ((Get-Module -Name "VM*") -eq $null)
-        {
+        if ((Get-Module -Name "VM*") -eq $null) {
             # If neither PowerCLI 5.8 nor PowerCLI 6.5 are installed, exit with error
             Write-Host "WARNING: You must have POWERCLI installed on your system" -BackgroundColor Red
             Write-Host "Download here: https://www.vmware.com/support/developer/PowerCLI/"
@@ -139,9 +139,9 @@ if (-not (Get-PSSnapin VMware.VimAutomation.Core -ErrorAction SilentlyContinue))
 }
 
 #check for previous vcenter connections
-if (($DefaultVIServers).Count -ne 0){
-	write-host "There are a previous vCenter active connection!!! Exit!!! " -ForegroundColor Red -BackgroundColor Black
-	exit (1)
+if (($DefaultVIServers).Count -ne 0) {
+    write-host "There are a previous vCenter active connection!!! Exit!!! " -ForegroundColor Red -BackgroundColor Black
+    exit (1)
 }
 
 Write-Host "`nPreparing to connect, please introduce your NGCS credentials when prompted`n" -BackgroundColor Blue -ForegroundColor Cyan
@@ -153,7 +153,8 @@ Get-Module -ListAvailable VM* | Import-Module
 # Get info from CSV
 try {
     $probeList = Import-Csv -Delimiter ',' -Path $probeFile
-} catch {
+}
+catch {
     Write-Error -ForegroundColor:Red "Probe file not found. Exiting!"
     exit
 }
@@ -161,26 +162,27 @@ try {
 #Ask for credentials and connect to vCenter
 $myCredentials = Get-Credential -WarningAction:SilentlyContinue -Message "Please provide credentials from @ionos.com to connect to vcenter" -username "@ionos.com"
 
-if (!$ignorevault){
-	# Default variables
-	$DomainProvisioningUser="DomainProvisioning@por-ngcs.lan"
-	$DomainProvisioningPass = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey DomainProvisioning
+if (!$ignorevault) {
+    # Default variables
+    $DomainProvisioningUser = "DomainProvisioning@por-ngcs.lan"
+    $DomainProvisioningPass = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey DomainProvisioning
 	
-	#create pssuser key
-	$pssuser_key = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey pssuser_key
-}else{
-	# Default variables
-	$DomainProvisioningUser="DomainProvisioning@por-ngcs.lan"
-	$DomainProvisioningPass = Read-Host ("Please, introduce DomainProvisioning@por-ngcs.lan password")
+    #create pssuser key
+    $pssuser_key = VAULT-GetSecret -uri $vaulturi -engine $vaultengine -secretpath $vaultpath -credentials $myCredentials -secretkey pssuser_key
+}
+else {
+    # Default variables
+    $DomainProvisioningUser = "DomainProvisioning@por-ngcs.lan"
+    $DomainProvisioningPass = Read-Host ("Please, introduce DomainProvisioning@por-ngcs.lan password")
 	
-	#create pssuser key
-	$pssuser_key = get-content .\pssuser.key
+    #create pssuser key
+    $pssuser_key = get-content .\pssuser.key
 }
 
 [IO.File]::WriteAllLines("$($pwd.path)\tmp_key", $pssuser_key)
-$ACL=Get-Acl .\tmp_key
-$ACL.SetAccessRuleProtection($true,$false)
-$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("$(whoami)","write,read,modify","Allow")
+$ACL = Get-Acl .\tmp_key
+$ACL.SetAccessRuleProtection($true, $false)
+$AccessRule = New-Object System.Security.AccessControl.FileSystemAccessRule("$(whoami)", "write,read,modify", "Allow")
 $ACL.SetAccessRule($AccessRule)
 $ACL | Set-Acl -Path tmp_key
 
@@ -192,17 +194,18 @@ $customization = "por-generic"
 $numcpu = 1
 $ram = 2
 
-foreach ($probe in $probeList)
-{
+foreach ($probe in $probeList) {
     try {
         if ( $force ) {
             throw "Forced re-creation of VM and DNS entries"
-        } else {
+        }
+        else {
             # Will be replaced by Resolve-DnsName if powershell is upgraded in desktops
             $dnscheck = [System.Net.DNS]::GetHostAddresses("$($probe.name).por-ngcs.lan")
             Write-Host "DNS entry already exists. Please check and re-run script with -force:`$true option" -ForegroundColor:Red -BackgroundColor Black
         }
-    } catch {
+    }
+    catch {
         # Calculate variables
         $probe.name -match "^([a-z]{2})-([a-z]{3})-[a-z]{2}ng(p?)([d0-9])zz([0-9]{2,3})-([0-2]{2})" | Out-Null
         $dcPrefix = $Matches[1]
@@ -214,39 +217,37 @@ foreach ($probe in $probeList)
         if ($siteDigit -eq "d") { $siteNumber = "9" }
         else { $siteNumber = $siteDigit }
         switch ($dcPrefix) {
-        "es" {
+            "es" {
 
-        if ($isPre -eq "p")
-        {
-            if ($siteDigit -eq "2")
-            {
-                $dc = "pru"
+                if ($isPre -eq "p") {
+                    if ($siteDigit -eq "2") {
+                        $dc = "pru"
+                    }
+                    else {
+                        $dc = "pre"
+                    }
+                }
+                else {
+                    $dc = "por"                    
+                }
             }
-            else
-            {
-                $dc = "pre"
+            "us" {
+                $dc = "lxa"
             }
-        }
-        else
-        {
-            $dc = "por"                    
-        }
-    }
-    "us" {
-        $dc = "lxa"
-    }
-    "de" {
-        if ($city -eq "rhr")
-        {
-            $dc = "rhr"
-        }
-        else {
-            $dc = "ber"
-        }
-    }
-    "gb" {
-        $dc = "glo"
-    }
+            "de" {
+                if ($city -eq "rhr") {
+                    $dc = "rhr"
+                }
+                else {
+                    $dc = "ber"
+                }
+            }
+            "gb" {
+                $dc = "glo"
+            }
+            "fr" {
+                $dc = "nbz"
+            }
             default {
                 Write-Error "Invalid datacenter! Please check provided parameter and re-run with a valid one!"
                 exit
@@ -255,52 +256,46 @@ foreach ($probe in $probeList)
         $site = $dc + $siteDigit
 
         # Exception for PRE
-        if ( ($isPre -eq "p") -and ($siteDigit -gt 2) )
-            {
-                $site = "pre2"
-            }
+        if ( ($isPre -eq "p") -and ($siteDigit -gt 2) ) {
+            $site = "pre2"
+        }
 
         # Get vCenter and connect
-        if ($probe.vcenter -eq ""){
-			$destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
-		}else{
-			$destVcenter = "$($probe.vcenter).por-ngcs.lan"
-		}
+        if ($probe.vcenter -eq "") {
+            $destVcenter = $probe.cluster.Split("-")[0] + "-" + $probe.cluster.Split("-")[1] + ".por-ngcs.lan"
+        }
+        else {
+            $destVcenter = "$($probe.vcenter).por-ngcs.lan"
+        }
         Write-Host "We are about to connect to $destVcenter to create $($probe.name)!`n" -ForegroundColor Cyan -BackgroundColor Blue
         #$vcenter = Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
         Connect-VIServer -Server $destVcenter -Credential $myCredentials -WarningAction:SilentlyContinue
 
         # Calculate datastore basing on probe name
-        if ($probe.datastore -eq ""){
-			if ($probe.name -like "*-01")
-			{
-				if ($dc -eq "rhr")
-				{
-					$datastore = "ds_${site}_site_internal3_01"
-				}
-				elseif ($dc -like "pr*")
-				{
-					$datastore = "ds_pre1_site_internal1_01"    
-				}
-				else
-				{
-					$datastore = "ds_${site}_site_internal1_01"
-				}            
-			}
-			elseif ($probe.name -like "*-02")
-			{
-				if ($dc -like "pr*")
-				{
-					$datastore = "ds_pre1_site_internal2_01"
-				}
-				else
-				{
-				$datastore = "ds_${site}_site_internal2_01"
-				}
-			}
-		}else{
-			$datastore=$probe.datastore
-		}
+        if ($probe.datastore -eq "") {
+            if ($probe.name -like "*-01") {
+                if ($dc -eq "rhr") {
+                    $datastore = "ds_${site}_site_internal3_01"
+                }
+                elseif ($dc -like "pr*") {
+                    $datastore = "ds_pre1_site_internal1_01"    
+                }
+                else {
+                    $datastore = "ds_${site}_site_internal1_01"
+                }            
+            }
+            elseif ($probe.name -like "*-02") {
+                if ($dc -like "pr*") {
+                    $datastore = "ds_pre1_site_internal2_01"
+                }
+                else {
+                    $datastore = "ds_${site}_site_internal2_01"
+                }
+            }
+        }
+        else {
+            $datastore = $probe.datastore
+        }
         # Prepare customization and deploy VM
         Get-OSCustomizationSpec -Name $probe.name -ErrorAction SilentlyContinue | Remove-OSCustomizationSpec -Confirm:$false
         #Write-Host  "`$oscust = New-OSCustomizationSpec -Name $($probe.name) -Type NonPersistent -OSCustomizationSpec $customization"
@@ -317,8 +312,7 @@ foreach ($probe in $probeList)
         $vm = New-VM -Server $destVcenter -Name $probe.name -Template (Get-template -Name $template) -ResourcePool (Get-Cluster -Name $probe.cluster) -OSCustomizationSpec $oscust -Datastore $datastore -Location (Get-Folder -Name $location -Type "VM")
         Get-NetworkAdapter -VM (Get-VM -Name $probe.name) | Set-NetworkAdapter -NetworkName $probe.portgroup -Confirm:$false -StartConnected:$true
         Get-VM -Name $probe.name | Set-VM -NumCpu $numcpu -MemoryGB $ram -Confirm:$false
-        if ($probe.privnet -ne "")
-        {
+        if ($probe.privnet -ne "") {
             New-NetworkAdapter -VM $vm -Portgroup (Get-VDPortgroup -Name $probe.privnet) -StartConnected:$true -Type:Vmxnet3 -Confirm:$false
         }
         # Start-VM -Server $vcenter -VM $probe.name
@@ -345,18 +339,16 @@ $local_ssh = [bool] (Get-Command -ErrorAction Ignore -Type Application ssh)
 Write-Host "Connecting to DHCP Server to do the reservation, accept the SSH fingertprint for the first time `n`n" -ForegroundColor Cyan -BackgroundColor Blue
 function ssh_exec {
 
-    foreach ($probe in $probeList) 
-        {
-            $vlanfordhcp = (($probe.portgroup) -split "vm")[1]
-            ssh -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
-            Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for VM $($probe.name) with MAC $($probe.mac) on $($robe.dhcpfqdn) `n" -ForegroundColor Green -BackgroundColor Blue
-        }  
+    foreach ($probe in $probeList) {
+        $vlanfordhcp = (($probe.portgroup) -split "vm")[1]
+        ssh -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
+        Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for VM $($probe.name) with MAC $($probe.mac) on $($robe.dhcpfqdn) `n" -ForegroundColor Green -BackgroundColor Blue
+    }  
 }
 
 function plink_exec {
 
-    foreach ($probe in $probelist)
-    {
+    foreach ($probe in $probelist) {
         $vlanfordhcp = (($probe.portgroup) -split "vm")[1]
         plink -batch -i $priv_key pssuser@$($probe.dhcpfqdn) "/home/pssuser/insert_dhcp_entry.sh -ipv4 $vlanfordhcp $($probe.mac) $($probe.ipadd4) && /home/pssuser/insert_dhcp_entry.sh -ipv6 $vlanfordhcp $($probe.mac) $($probe.ipadd6)"
         Write-Host "Correctly reserved $($probe.ipadd4) and $($probe.ipadd6) in $($vlanfordhcp) for VM $($probe.name) with MAC $($probe.mac) on $($robe.dhcpfqdn) `n" -ForegroundColor Green -BackgroundColor Blue
@@ -364,12 +356,10 @@ function plink_exec {
     }      
 }
 
-if ( $local_ssh )
-{
+if ( $local_ssh ) {
     ssh_exec
 }
-else 
-{
+else {
     plink_exec    
 }
 remove-item $priv_key -force
