@@ -293,7 +293,7 @@ foreach ($probe in $probeList)
             }
             elseif ($dc -eq "nbz")
             {
-                $datastore = "ds_int1_01_site"   
+                $datastore = "ds_int1_01"   
             }
             elseif ($dc -like "pr*")
             {
@@ -316,7 +316,7 @@ foreach ($probe in $probeList)
             }
             elseif ($dc -eq "nbz")
             {
-                $datastore = "ds_int2_01_site"   
+                $datastore = "ds_int2_01"   
             }
             else
             {
