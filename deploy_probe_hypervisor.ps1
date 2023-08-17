@@ -291,6 +291,10 @@ foreach ($probe in $probeList)
             {
                 $datastore = "ds_int1_net1_01"   
             }
+            elseif ($dc -eq "nbz")
+            {
+                $datastore = "ds_int1_01_site"   
+            }
             elseif ($dc -like "pr*")
             {
                 $datastore = "ds_pre1_site_internal1_01"    
@@ -309,6 +313,10 @@ foreach ($probe in $probeList)
             elseif ($dc -eq "ber")
             {
                 $datastore = "ds_int2_net2_01"   
+            }
+            elseif ($dc -eq "nbz")
+            {
+                $datastore = "ds_int2_01_site"   
             }
             else
             {
