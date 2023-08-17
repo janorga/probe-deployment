@@ -246,6 +246,9 @@ foreach ($probe in $probeList)
     "us" {
         $dc = "lxa"
     }
+    "fr" {
+        $dc = "nbz"
+    }
     "de" {
         if ($city -eq "rhr")
         {
