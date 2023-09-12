@@ -289,7 +289,7 @@ foreach ($probe in $probeList)
             }
             elseif ($dc -eq "ber")
             {
-                $datastore = "ds_int1_net1_01"   
+                $datastore = "ber-fas01_ds02"   
             }
             elseif ($dc -eq "nbz")
             {
@@ -312,7 +312,7 @@ foreach ($probe in $probeList)
             }
             elseif ($dc -eq "ber")
             {
-                $datastore = "ds_int2_net2_01"   
+                $datastore = "ber-fas02_ds02"  
             }
             elseif ($dc -eq "nbz")
             {
