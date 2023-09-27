@@ -1,0 +1,7 @@
+"name","vcenter","site","ipadd4","ipadd6","cluster","datastore","portgroup","privnet","mac","dhcpfqdn"
+"de-ber-rsng2zz207-01","ber-intvc2.por-ngcs.lan","ber2","85.215.111.48","2a01:239:1f:8000::105","ber2-network","ds_int1_net_01","nws-vmvlan303","","00:50:56:a0:75:04","ber2-dhcp1.por-ngcs.lan"
+"de-ber-rsng2zz207-02","ber-intvc2.por-ngcs.lan","ber2","85.215.111.49","2a01:239:1f:8000::106","ber2-network","ds_int2_net_01","nws-vmvlan303","","00:50:56:a0:62:d1","ber2-dhcp1.por-ngcs.lan"
+"de-ber-rsng2zz208-01","ber-intvc2.por-ngcs.lan","ber2","85.215.111.50","2a01:239:1f:8000::107","ber2-network","ds_int1_net_01","nws-vmvlan304","","00:50:56:a0:1c:b7","ber2-dhcp1.por-ngcs.lan"
+"de-ber-rsng2zz208-02","ber-intvc2.por-ngcs.lan","ber2","85.215.111.51","2a01:239:1f:8000::108","ber2-network","ds_int2_net_01","nws-vmvlan304","","00:50:56:a0:86:17","ber2-dhcp1.por-ngcs.lan"
+"de-ber-rsng2zz209-01","ber-intvc2.por-ngcs.lan","ber2","85.215.111.52","2a01:239:1f:8000::109","ber2-network","ds_int1_net_01","nws-vmvlan305","","00:50:56:a0:23:bc","ber2-dhcp1.por-ngcs.lan"
+"de-ber-rsng2zz209-02","ber-intvc2.por-ngcs.lan","ber2","85.215.111.53","2a01:239:1f:8000::10a","ber2-network","ds_int2_net_01","nws-vmvlan305","","00:50:56:a0:4b:d0","ber2-dhcp1.por-ngcs.lan"
