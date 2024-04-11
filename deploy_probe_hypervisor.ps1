@@ -301,7 +301,7 @@ foreach ($probe in $probeList)
             }
             else
             {
-                $datastore = "ds_int1_net1_01"
+                $datastore = "ds_int1_02"
             }            
         }
         elseif ($probe.name -like "*-02")
@@ -320,7 +320,7 @@ foreach ($probe in $probeList)
             }
             else
             {
-            $datastore = "ds_int2_net2_01"
+            $datastore = "ds_int2_02"
             }
         }
 		
